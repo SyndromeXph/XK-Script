@@ -34,7 +34,7 @@ end
 
 icons = {}
 
-local IconLoadResult = { pcall(v10) }
+local IconLoadResult = { pcall(loadIconsFn) }
 local IconLoadError = IconLoadResult[2]
 
 if not IconLoadResult[1] then
@@ -64,7 +64,7 @@ RestoreIcon.Parent = ScreenGui
 local RestoreCorner = Instance.new("UICorner")
 RestoreCorner.CornerRadius = UDim.new(1, 0)
 RestoreCorner.Parent = RestoreIcon
-local RestoreImage = Instance.new("Image")
+local RestoreImage = Instance.new("ImageLabel")
 RestoreImage.Image = "rbxassetid://8834748103"
 RestoreImage.Size = UDim2.new(0, 26, 0, 26)
 RestoreImage.Position = UDim2.new(0.5, -13, 0.5, -13)
@@ -75,25 +75,25 @@ AddThemeObject(RestoreIcon, "Second")
 
 if gethui then
 	for _, child in ipairs(gethui():GetChildren()) do
-		local v16 = child.Name == ScreenGui.Name
+		local isMatch = child.Name == ScreenGui.Name
 
-		if v16 then
-			v16 = child ~= ScreenGui
+		if isMatch then
+			isMatch = child ~= ScreenGui
 		end
 
-		if v16 then
+		if isMatch then
 			child:Destroy()
 		end
 	end
 else
 	for _, child in ipairs(game.CoreGui:GetChildren()) do
-		local v19 = child.Name == ScreenGui.Name
+		local isMatch2 = child.Name == ScreenGui.Name
 
-		if v19 then
-			v19 = child ~= ScreenGui
+		if isMatch2 then
+			isMatch2 = child ~= ScreenGui
 		end
 
-		if v19 then
+		if isMatch2 then
 			child:Destroy()
 		end
 	end
@@ -107,9 +107,9 @@ function Orion.IsRunning(_)
 	end
 end
 
-local function AddConnection(p1, p2)
+local function AddConnection(self, func)
 	if Orion:IsRunning() then
-		local connection = p1:Connect(p2)
+		local connection = self:Connect(func)
 		local Connections = Orion.Connections
 
 		table.insert(Connections, connection)
@@ -117,12 +117,12 @@ local function AddConnection(p1, p2)
 		return connection
 	end
 end
-local function SetProperties(p3, p4)
-	table.foreach(p4, function(p5, p6)
-		p3[p5] = p6
+local function SetProperties(connectionName, parent)
+	table.foreach(parent, function(list, index)
+		connectionName[list] = index
 	end)
 
-	return p3
+	return connectionName
 end
 
 task.spawn(function()
@@ -135,65 +135,65 @@ task.spawn(function()
 	local key = nil
 
 	while true do
-		local v27
+		local iterValue
 
-		key, v27 = next_(Connections, key)
+		key, iterValue = next_(Connections, key)
 
 		if not key then
 			break
 		end
 
-		v27:Disconnect()
+		iterValue:Disconnect()
 	end
 end)
 
-local function MakeDraggable(p7, p8)
-	local v29 = nil
-	local v30 = nil
+local function MakeDraggable(dragPoint, main)
+	local valueA = nil
+	local valueB = nil
 
-	local function v31()
-		local u32 = false
-		local u33 = nil
+	local function cleanupUI()
+		local hideTween = false
+		local waitTween = nil
 		local Position = nil
 		local Position2 = nil
-		local InputBegan = v30.InputBegan
+		local InputBegan = valueB.InputBegan
 
-		local function v37(p9)
-			if p9.UserInputType ~= Enum.UserInputType.MouseButton1 then
+		local function onInputBegan(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 				return
 			end
 
-			u32 = true
-			Position = p9.Position
-			Position2 = v29.Position
-			p9.Changed:Connect(function()
-				if p9.UserInputState ~= Enum.UserInputState.End then
+			hideTween = true
+			Position = input.Position
+			Position2 = valueA.Position
+			input.Changed:Connect(function()
+				if input.UserInputState ~= Enum.UserInputState.End then
 					return
 				end
 
-				u32 = false
+				hideTween = false
 			end)
 		end
 
 		if Orion:IsRunning() then
-			local connection = InputBegan:Connect(v37)
+			local connection = InputBegan:Connect(onInputBegan)
 			local Connections = Orion.Connections
 
 			table.insert(Connections, connection)
 		end
 
-		local InputChanged = v30.InputChanged
+		local InputChanged = valueB.InputChanged
 
-		local function v41(p10)
-			if p10.UserInputType ~= Enum.UserInputType.MouseMovement then
+		local function onDragStart(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseMovement then
 				return
 			end
 
-			u33 = p10
+			waitTween = input
 		end
 
 		if Orion:IsRunning() then
-			local connection = InputChanged:Connect(v41)
+			local connection = InputChanged:Connect(onDragStart)
 			local Connections = Orion.Connections
 
 			table.insert(Connections, connection)
@@ -201,166 +201,166 @@ local function MakeDraggable(p7, p8)
 
 		local InputChanged2 = UserInputService.InputChanged
 
-		local function v45(p11)
-			local v46
+		local function onInputEnded(input)
+			local shouldWait
 
-			if p11 == u33 then
-				v46 = u32
+			if input == waitTween then
+				shouldWait = hideTween
 			else
-				v46 = false
+				shouldWait = false
 			end
 
-			if not v46 then
+			if not shouldWait then
 				return
 			end
 
-			local v47 = p11.Position - Position
+			local dragOffset = input.Position - Position
 
-			v29.Position = UDim2.new(Position2.X.Scale, Position2.X.Offset + v47.X, Position2.Y.Scale, Position2.Y.Offset + v47.Y)
+			valueA.Position = UDim2.new(Position2.X.Scale, Position2.X.Offset + dragOffset.X, Position2.Y.Scale, Position2.Y.Offset + dragOffset.Y)
 		end
 
 		if not Orion:IsRunning() then
 			return
 		end
 
-		local connection = InputChanged2:Connect(v45)
+		local connection = InputChanged2:Connect(onInputEnded)
 		local Connections = Orion.Connections
 
 		table.insert(Connections, connection)
 	end
 
-	v30 = p7
-	v29 = p8
-	pcall(v31)
+	valueB = dragPoint
+	valueA = main
+	pcall(cleanupUI)
 end
-local function CreateInstance(p12, p13, p14)
-	local instance = Instance.new(p12)
+local function CreateInstance(className, children, objects)
+	local instance = Instance.new(className)
 	local next_ = next
-	local v53 = p13 or {}
+	local children = children or {}
 	local key = nil
 
 	while true do
-		local v55
+		local propValue
 
-		key, v55 = next_(v53, key)
+		key, propValue = next_(children, key)
 
 		if not key then
 			break
 		end
 
-		instance[key] = v55
+		instance[key] = propValue
 	end
 
 	local next_2 = next
-	local v57 = p14 or {}
+	local objects = objects or {}
 	local key2 = nil
 
 	while true do
-		local v59
+		local childValue
 
-		key2, v59 = next_2(v57, key2)
+		key2, childValue = next_2(objects, key2)
 
 		if not key2 then
 			break
 		end
 
-		v59.Parent = instance
+		childValue.Parent = instance
 	end
 
 	return instance
 end
-local function NewElement(p15, ...)
-	return Orion.Elements[p15](...)
+local function NewElement(className, ...)
+	return Orion.Elements[className](...)
 end
-local function RegisterElement(p16, p17)
-	Orion.Elements[p16] = function(...)
-		return p17(...)
+local function RegisterElement(elementType, buildFunction)
+	Orion.Elements[elementType] = function(...)
+		return buildFunction(...)
 	end
 end
-local function RoundToIncrement(p18, p19)
-	local v63 = math.floor(p18 / p19 + math.sign(p18) * 0.5) * p19
+local function RoundToIncrement(value, increment)
+	local roundedValue = math.floor(value / increment + math.sign(value) * 0.5) * increment
 
-	if not (v63 < 0) then
-		return v63
+	if not (roundedValue < 0) then
+		return roundedValue
 	end
 
-	v63 = v63 + p19
+	roundedValue = roundedValue + increment
 
-	return v63
+	return roundedValue
 end
-local function SetChildren(p20, p21)
-	table.foreach(p21, function(_, p22)
-		p22.Parent = p20
+local function SetChildren(children, parent)
+	table.foreach(parent, function(_, child)
+		child.Parent = children
 	end)
 
-	return p20
+	return children
 end
 
 local GetColorProperty = nil
 
-local function AddThemeObject(p23, p24)
-	if Orion.ThemeObjects[p24] then
-		local v88 = Orion.ThemeObjects[p24]
-		table.insert(v88, p23)
-		p23[GetColorProperty(p23)] = Orion.Themes[Orion.SelectedTheme][p24]
+local function AddThemeObject(element, property)
+	if Orion.ThemeObjects[property] then
+		local themeObjects = Orion.ThemeObjects[property]
+		table.insert(themeObjects, element)
+		element[GetColorProperty(element)] = Orion.Themes[Orion.SelectedTheme][property]
 
-		return p23
+		return element
 	end
 
-	Orion.ThemeObjects[p24] = {}
+	Orion.ThemeObjects[property] = {}
 
-	local v67 = Orion.ThemeObjects[p24]
+	local objectsList = Orion.ThemeObjects[property]
 
-	table.insert(v67, p23)
-	p23[GetColorProperty(p23)] = Orion.Themes[Orion.SelectedTheme][p24]
+	table.insert(objectsList, element)
+	element[GetColorProperty(element)] = Orion.Themes[Orion.SelectedTheme][property]
 
-	return p23
+	return element
 end
 
-GetColorProperty = function(p25)
-	if p25:IsA("Frame") or p25:IsA("TextButton") then
+GetColorProperty = function(property)
+	if property:IsA("Frame") or property:IsA("TextButton") then
 		return "BackgroundColor3"
-	elseif p25:IsA("ScrollingFrame") then
+	elseif property:IsA("ScrollingFrame") then
 		return "ScrollBarImageColor3"
-	elseif p25:IsA("UIStroke") then
+	elseif property:IsA("UIStroke") then
 		return "Color"
-	elseif p25:IsA("TextLabel") or p25:IsA("TextBox") then
+	elseif property:IsA("TextLabel") or property:IsA("TextBox") then
 		return "TextColor3"
-	elseif p25:IsA("ImageLabel") or p25:IsA("ImageButton") then
+	elseif property:IsA("ImageLabel") or property:IsA("ImageButton") then
 		return "ImageColor3"
 	else
 		return
 	end
 end
 
-local function SaveConfig(p26)
-	local t3 = {}
+local function SaveConfig(configName)
+	local configToSave = {}
 
-	for k, v71 in pairs(Orion.Flags) do
-		if v71.Save then
-			if v71.Type == "Colorpicker" then
-				local Value_ = v71.Value
+	for k, flagValue in pairs(Orion.Flags) do
+		if flagValue.Save then
+			if flagValue.Type == "Colorpicker" then
+				local Value_ = flagValue.Value
 
-				t3[k] = {
+				configToSave[k] = {
 					R = Value_.R * 255,
 					G = Value_.G * 255,
 					B = Value_.B * 255
 				}
 			else
-				t3[k] = v71.Value
+				configToSave[k] = flagValue.Value
 			end
 		end
 	end
 
-	local v73 = HttpService
+	local httpService = HttpService
 
-	writefile(Orion.Folder .. "/" .. p26 .. ".txt", (tostring(v73:JSONEncode(t3))))
+	writefile(Orion.Folder .. "/" .. configName .. ".txt", (tostring(httpService:JSONEncode(configToSave))))
 end
 
 local DeserializeColor = nil
 
-DeserializeColor = function(p27)
-	return Color3.fromRGB(p27.R, p27.G, p27.B)
+DeserializeColor = function(colorTable)
+	return Color3.fromRGB(colorTable.R, colorTable.G, colorTable.B)
 end
 
 local MouseInputTypes = { Enum.UserInputType.MouseButton1, Enum.UserInputType.MouseButton2, Enum.UserInputType.MouseButton3 }
@@ -380,48 +380,48 @@ local IgnoredKeys = {
 	Enum.KeyCode.Escape
 }
 
-local function IsInList(p28, p29)
+local function IsInList(list, item)
 	local next_ = next
 	local key = nil
 
 	while true do
-		local v80
+		local loopValue
 
-		key, v80 = next_(p28, key)
+		key, loopValue = next_(list, key)
 
 		if not key then
 			break
 		end
 
-		if v80 == p29 then
+		if loopValue == item then
 			return true
 		end
 	end
 end
 
-RegisterElement("Corner", function(p30, p31)
+RegisterElement("Corner", function(parent, cornerRadius)
 	return CreateInstance("UICorner", {
-		CornerRadius = UDim.new(p30 or 0, p31 or 10)
+		CornerRadius = UDim.new(parent or 0, cornerRadius or 10)
 	})
 end)
-RegisterElement("Stroke", function(p32, p33)
+RegisterElement("Stroke", function(parent, thickness)
 	return CreateInstance("UIStroke", {
-		Color = p32 or Color3.fromRGB(255, 255, 255),
-		Thickness = p33 or 1
+		Color = parent or Color3.fromRGB(255, 255, 255),
+		Thickness = thickness or 1
 	})
 end)
-RegisterElement("List", function(p34, p35)
+RegisterElement("List", function(parent, listPadding)
 	return CreateInstance("UIListLayout", {
 		SortOrder = Enum.SortOrder.LayoutOrder,
-		Padding = UDim.new(p34 or 0, p35 or 0)
+		Padding = UDim.new(parent or 0, listPadding or 0)
 	})
 end)
-RegisterElement("Padding", function(p36, p37, p38, p39)
+RegisterElement("Padding", function(parent, padTop, padBottom, padLeftRight)
 	return CreateInstance("UIPadding", {
-		PaddingBottom = UDim.new(0, p36 or 4),
-		PaddingLeft = UDim.new(0, p37 or 4),
-		PaddingRight = UDim.new(0, p38 or 4),
-		PaddingTop = UDim.new(0, p39 or 4)
+		PaddingBottom = UDim.new(0, parent or 4),
+		PaddingLeft = UDim.new(0, padTop or 4),
+		PaddingRight = UDim.new(0, padBottom or 4),
+		PaddingTop = UDim.new(0, padLeftRight or 4)
 	})
 end)
 RegisterElement("TFrame", function()
@@ -429,18 +429,18 @@ RegisterElement("TFrame", function()
 		BackgroundTransparency = 1
 	})
 end)
-RegisterElement("Frame", function(p40)
+RegisterElement("Frame", function(parent)
 	return CreateInstance("Frame", {
-		BackgroundColor3 = p40 or Color3.fromRGB(255, 255, 255),
+		BackgroundColor3 = parent or Color3.fromRGB(255, 255, 255),
 		BorderSizePixel = 0
 	})
 end)
-RegisterElement("RoundFrame", function(p41, p42, p43)
+RegisterElement("RoundFrame", function(parent, cornerScale, cornerOffset)
 	return CreateInstance("Frame", {
-		BackgroundColor3 = p41 or Color3.fromRGB(255, 255, 255),
+		BackgroundColor3 = parent or Color3.fromRGB(255, 255, 255),
 		BorderSizePixel = 0
 	}, { CreateInstance("UICorner", {
-			CornerRadius = UDim.new(p42, p43)
+			CornerRadius = UDim.new(cornerScale, cornerOffset)
 		}) })
 end)
 RegisterElement("Button", function()
@@ -451,59 +451,59 @@ RegisterElement("Button", function()
 		BorderSizePixel = 0
 	})
 end)
-RegisterElement("ScrollFrame", function(p44, p45)
+RegisterElement("ScrollFrame", function(parent, scrollingEnabled)
 	return CreateInstance("ScrollingFrame", {
 		BackgroundTransparency = 1,
 		MidImage = "rbxassetid://7445543667",
 		BottomImage = "rbxassetid://7445543667",
 		TopImage = "rbxassetid://7445543667",
-		ScrollBarImageColor3 = p44,
+		ScrollBarImageColor3 = parent,
 		BorderSizePixel = 0,
-		ScrollBarThickness = p45,
+		ScrollBarThickness = scrollingEnabled,
 		CanvasSize = UDim2.new(0, 0, 0, 0)
 	})
 end)
-RegisterElement("Image", function(p46)
+RegisterElement("Image", function(parent)
 	local ImageLabel = CreateInstance("ImageLabel", {
-		Image = p46,
+		Image = parent,
 		BackgroundTransparency = 1
 	})
-	local v82
+	local iconName
 
-	if icons[p46] == nil then
-		v82 = nil
+	if icons[parent] == nil then
+		iconName = nil
 	else
-		v82 = icons[p46]
+		iconName = icons[parent]
 	end
 
-	if v82 == nil then
+	if iconName == nil then
 		return ImageLabel
 	end
 
-	local v83
+	local iconId
 
-	if icons[p46] == nil then
-		v83 = nil
+	if icons[parent] == nil then
+		iconId = nil
 	else
-		v83 = icons[p46]
+		iconId = icons[parent]
 	end
 
-	ImageLabel.Image = v83
+	ImageLabel.Image = iconId
 
 	return ImageLabel
 end)
-RegisterElement("ImageButton", function(p47)
+RegisterElement("ImageButton", function(parent)
 	return CreateInstance("ImageButton", {
-		Image = p47,
+		Image = parent,
 		BackgroundTransparency = 1
 	})
 end)
-RegisterElement("Label", function(p48, p49, p50)
+RegisterElement("Label", function(parent, labelText, textSize)
 	return CreateInstance("TextLabel", {
-		Text = p48 or "",
+		Text = parent or "",
 		TextColor3 = Color3.fromRGB(240, 240, 240),
-		TextTransparency = p50 or 0,
-		TextSize = p49 or 15,
+		TextTransparency = textSize or 0,
+		TextSize = labelText or 15,
 		Font = Enum.Font.Gotham,
 		RichText = true,
 		BackgroundTransparency = 1,
@@ -523,22 +523,22 @@ local NotificationHolder = SetProperties(SetChildren(NewElement("TFrame"), { Set
 	Parent = ScreenGui
 })
 
-function Orion.MakeNotification(_, p51)
-	local v85 = nil
+function Orion.MakeNotification(_, NotificationConfig)
+	local notification = nil
 
-	local function v86()
-		v85.Name = v85.Name or "Notification"
-		v85.Content = v85.Content or "Test"
-		v85.Image = v85.Image or "rbxassetid://4384403532"
-		v85.Time = v85.Time or 15
+	local function removeNotification()
+		notification.Name = notification.Name or "Notification"
+		notification.Content = notification.Content or "Test"
+		notification.Image = notification.Image or "rbxassetid://4384403532"
+		notification.Time = notification.Time or 15
 
-		local v87 = SetProperties(NewElement("TFrame"), {
+		local notifListFrame = SetProperties(NewElement("TFrame"), {
 			Size = UDim2.new(1, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Parent = NotificationHolder
 		})
-		local v89 = SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 10), {
-			Parent = v87,
+		local notificationFrame = SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 10), {
+			Parent = notifListFrame,
 			Size = UDim2.new(1, 0, 0, 0),
 			Position = UDim2.new(1, -55, 0, 0),
 			BackgroundTransparency = 0,
@@ -546,18 +546,18 @@ function Orion.MakeNotification(_, p51)
 		}), {
 			NewElement("Stroke", Color3.fromRGB(93, 93, 93), 1.2),
 			NewElement("Padding", 12, 12, 12, 12),
-			SetProperties(NewElement("Image", v85.Image), {
+			SetProperties(NewElement("Image", notification.Image), {
 				Size = UDim2.new(0, 20, 0, 20),
 				ImageColor3 = Color3.fromRGB(240, 240, 240),
 				Name = "Icon"
 			}),
-			SetProperties(NewElement("Label", v85.Name, 15), {
+			SetProperties(NewElement("Label", notification.Name, 15), {
 				Size = UDim2.new(1, -30, 0, 20),
 				Position = UDim2.new(0, 30, 0, 0),
 				Font = Enum.Font.GothamBold,
 				Name = "Title"
 			}),
-			SetProperties(NewElement("Label", v85.Content, 14), {
+			SetProperties(NewElement("Label", notification.Content, 14), {
 				Size = UDim2.new(1, 0, 0, 0),
 				Position = UDim2.new(0, 0, 0, 25),
 				Font = Enum.Font.GothamSemibold,
@@ -567,38 +567,38 @@ function Orion.MakeNotification(_, p51)
 				TextWrapped = true
 			})
 		})
-		local v90 = TweenService
+		local tweenService = TweenService
 		local tweenInfoNew = TweenInfo.new
 		local Enum_ = Enum
 
-		v90.Create(v90, v89, tweenInfoNew(0.5, Enum_.EasingStyle.Quint), {
+		tweenService.Create(tweenService, notificationFrame, tweenInfoNew(0.5, Enum_.EasingStyle.Quint), {
 			Position = UDim2.new(0, 0, 0, 0)
 		}):Play()
-		wait(v85.Time - 0.88)
-		TweenService:Create(v89.Icon, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {
+		wait(notification.Time - 0.88)
+		TweenService:Create(notificationFrame.Icon, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {
 			ImageTransparency = 1
 		}):Play()
-		TweenService:Create(v89, TweenInfo.new(0.8, Enum.EasingStyle.Quint), {
+		TweenService:Create(notificationFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quint), {
 			BackgroundTransparency = 0.6
 		}):Play()
 		wait(0.3)
-		TweenService:Create(v89.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
+		TweenService:Create(notificationFrame.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
 			Transparency = 0.9
 		}):Play()
-		TweenService:Create(v89.Title, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
+		TweenService:Create(notificationFrame.Title, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
 			TextTransparency = 0.4
 		}):Play()
-		TweenService:Create(v89.Content, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
+		TweenService:Create(notificationFrame.Content, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
 			TextTransparency = 0.5
 		}):Play()
 		wait(0.05)
-		v89:TweenPosition(UDim2.new(1, 20, 0, 0), "In", "Quint", 0.8, true)
+		notificationFrame:TweenPosition(UDim2.new(1, 20, 0, 0), "In", "Quint", 0.8, true)
 		wait(1.35)
-		v89:Destroy()
+		notificationFrame:Destroy()
 	end
 
-	v85 = p51
-	spawn(v86)
+	notification = NotificationConfig
+	spawn(removeNotification)
 end
 function Orion.Init(_)
 	if not Orion.SaveCfg then
@@ -612,56 +612,56 @@ function Orion.Init(_)
 
 		local data = HttpService:JSONDecode((readfile(Orion.Folder .. "/" .. game.GameId .. ".txt")))
 
-		table.foreach(data, function(p52, p53)
-			if not Orion.Flags[p52] then
-				warn("Orion Library Config Loader - Could not find ", p52, p53)
+		table.foreach(data, function(key, value)
+			if not Orion.Flags[key] then
+				warn("Orion Library Config Loader - Could not find ", key, value)
 
 				return
 			end
 
-			local function v93()
-				if Orion.Flags[p52].Type == "Colorpicker" then
-					Orion.Flags[p52]:Set(unpack_({ DeserializeColor(p53) }))
+			local function saveConfigOnExit()
+				if Orion.Flags[key].Type == "Colorpicker" then
+					Orion.Flags[key]:Set(unpack_({ DeserializeColor(value) }))
 				else
-					Orion.Flags[p52]:Set(p53)
+					Orion.Flags[key]:Set(value)
 				end
 			end
 
-			spawn(v93)
+			spawn(saveConfigOnExit)
 		end)
 
-		local v94 = Orion
+		local orionRef = Orion
 		local GameId = game.GameId
 
-		v94.MakeNotification(v94, {
+		orionRef.MakeNotification(orionRef, {
 			Name = "配置",
 			Content = "自动载入游戏配置" .. GameId .. ".",
 			Time = 5
 		})
 	end)
 end
-function Orion.MakeWindow(_, p54)
-	local v97 = p54 or {}
+function Orion.MakeWindow(_, windowConfig)
+	local WindowConfig = windowConfig or {}
 
-	v97.Name = v97.Name or "Orion Library"
-	v97.ConfigFolder = v97.ConfigFolder or v97.Name
-	v97.SaveConfig = v97.SaveConfig or false
-	v97.HidePremium = v97.HidePremium or false
+	WindowConfig.Name = WindowConfig.Name or "Orion Library"
+	WindowConfig.ConfigFolder = WindowConfig.ConfigFolder or WindowConfig.Name
+	WindowConfig.SaveConfig = WindowConfig.SaveConfig or false
+	WindowConfig.HidePremium = WindowConfig.HidePremium or false
 
-	if v97.IntroEnabled == nil then
-		v97.IntroEnabled = true
+	if WindowConfig.IntroEnabled == nil then
+		WindowConfig.IntroEnabled = true
 	end
 
-	v97.IntroText = v97.IntroText or "Orion Library"
-	v97.CloseCallback = v97.CloseCallback or function() end
-	v97.ShowIcon = v97.ShowIcon or false
-	v97.Icon = v97.Icon or "rbxassetid://8834748103"
-	v97.IntroIcon = v97.IntroIcon or "rbxassetid://8834748103"
-	Orion.Folder = v97.ConfigFolder
-	Orion.SaveCfg = v97.SaveConfig
+	WindowConfig.IntroText = WindowConfig.IntroText or "Orion Library"
+	WindowConfig.CloseCallback = WindowConfig.CloseCallback or function() end
+	WindowConfig.ShowIcon = WindowConfig.ShowIcon or false
+	WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://8834748103"
+	WindowConfig.IntroIcon = WindowConfig.IntroIcon or "rbxassetid://8834748103"
+	Orion.Folder = WindowConfig.ConfigFolder
+	Orion.SaveCfg = WindowConfig.SaveConfig
 
-	if v97.SaveConfig and not isfolder(v97.ConfigFolder) then
-		makefolder(v97.ConfigFolder)
+	if WindowConfig.SaveConfig and not isfolder(WindowConfig.ConfigFolder) then
+		makefolder(WindowConfig.ConfigFolder)
 	end
 
 	local divider = AddThemeObject(SetChildren(SetProperties(NewElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4), {
@@ -669,18 +669,18 @@ function Orion.MakeWindow(_, p54)
 	}), { NewElement("List"), NewElement("Padding", 8, 0, 0, 8) }), "Divider")
 	local signal = divider.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize")
 
-	local function v100()
+	local function onWindowIconClick()
 		divider.CanvasSize = UDim2.new(0, 0, 0, divider.UIListLayout.AbsoluteContentSize.Y + 16)
 	end
 
 	if Orion:IsRunning() then
-		local connection = signal:Connect(v100)
+		local connection = signal:Connect(onWindowIconClick)
 		local Connections = Orion.Connections
 
 		table.insert(Connections, connection)
 	end
 
-	local v103 = SetChildren(SetProperties(NewElement("Button"), {
+	local closeButton = SetChildren(SetProperties(NewElement("Button"), {
 		Size = UDim2.new(0.5, 0, 1, 0),
 		Position = UDim2.new(0.5, 0, 0, 0),
 		BackgroundTransparency = 1
@@ -688,7 +688,7 @@ function Orion.MakeWindow(_, p54)
 			Position = UDim2.new(0, 9, 0, 6),
 			Size = UDim2.new(0, 18, 0, 18)
 		}), "Text") })
-	local v104 = SetChildren(SetProperties(NewElement("Button"), {
+	local menuButton = SetChildren(SetProperties(NewElement("Button"), {
 		Size = UDim2.new(0.5, 0, 1, 0),
 		BackgroundTransparency = 1
 	}), { AddThemeObject(SetProperties(NewElement("Image", "rbxassetid://7072719338"), {
@@ -696,12 +696,12 @@ function Orion.MakeWindow(_, p54)
 			Size = UDim2.new(0, 18, 0, 18),
 			Name = "Ico"
 		}), "Text") })
-	local v105 = SetProperties(NewElement("TFrame"), {
+	local menuFrame = SetProperties(NewElement("TFrame"), {
 		Size = UDim2.new(1, 0, 0, 50)
 	})
-	local v106 = AddThemeObject
-	local v107 = SetChildren
-	local v108 = SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+	local addThemeFn = AddThemeObject
+	local setChildrenFn2 = SetChildren
+	local topBar = SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
 		Size = UDim2.new(0, 150, 1, -50),
 		Position = UDim2.new(0, 0, 0, 50)
 	})
@@ -717,8 +717,8 @@ function Orion.MakeWindow(_, p54)
 		Size = UDim2.new(0, 1, 1, 0),
 		Position = UDim2.new(1, -1, 0, 0)
 	}), "Stroke")
-	local v112 = SetChildren
-	local v113 = SetProperties(NewElement("TFrame"), {
+	local setChildrenFn3 = SetChildren
+	local tabHolder = SetProperties(NewElement("TFrame"), {
 		Size = UDim2.new(1, 0, 0, 50),
 		Position = UDim2.new(0, 0, 1, -50)
 	})
@@ -734,31 +734,31 @@ function Orion.MakeWindow(_, p54)
 		}), AddThemeObject(SetProperties(NewElement("Image", "rbxassetid://4031889928"), {
 			Size = UDim2.new(1, 0, 1, 0)
 		}), "Second"), NewElement("Corner", 1) }), "Divider")
-	local v116 = SetChildren(SetProperties(NewElement("TFrame"), {
+	local tabContainer = SetChildren(SetProperties(NewElement("TFrame"), {
 		AnchorPoint = Vector2.new(0, 0.5),
 		Size = UDim2.new(0, 32, 0, 32),
 		Position = UDim2.new(0, 10, 0.5, 0)
 	}), { AddThemeObject(NewElement("Stroke"), "Stroke"), NewElement("Corner", 1) })
-	local v117 = AddThemeObject
-	local v118 = SetProperties
-	local Label = NewElement("Label", LocalPlayer.DisplayName, v97.HidePremium and 14 or 13)
+	local addThemeFn2 = AddThemeObject
+	local setPropsFn = SetProperties
+	local Label = NewElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 14 or 13)
 	local uDim2 = UDim2.new(1, -60, 0, 13)
-	local HidePremium = v97.HidePremium
+	local HidePremium = WindowConfig.HidePremium
 
 	if HidePremium then
 		HidePremium = UDim2.new(0, 50, 0, 19)
 	end
 
-	local second3 = v106(v107(v108, {
+	local second3 = addThemeFn(setChildrenFn2(topBar, {
 		second,
 		second2,
 		stroke,
 		divider,
-		v112(v113, {
+		setChildrenFn3(tabHolder, {
 			stroke2,
 			divider2,
-			v116,
-			v117(v118(Label, {
+			tabContainer,
+			addThemeFn2(setPropsFn(Label, {
 				Size = uDim2,
 				Position = HidePremium or UDim2.new(0, 50, 0, 12),
 				Font = Enum.Font.GothamBold,
@@ -767,11 +767,11 @@ function Orion.MakeWindow(_, p54)
 			AddThemeObject(SetProperties(NewElement("Label", "", 12), {
 				Size = UDim2.new(1, -60, 0, 12),
 				Position = UDim2.new(0, 50, 1, -25),
-				Visible = not v97.HidePremium
+				Visible = not WindowConfig.HidePremium
 			}), "TextDark")
 		})
 	}), "Second")
-	local text = AddThemeObject(SetProperties(NewElement("Label", v97.Name, 14), {
+	local text = AddThemeObject(SetProperties(NewElement("Label", WindowConfig.Name, 14), {
 		Size = UDim2.new(1, -30, 2, 0),
 		Position = UDim2.new(0, 25, 0, -24),
 		Font = Enum.Font.GothamBlack,
@@ -800,23 +800,23 @@ function Orion.MakeWindow(_, p54)
 					Size = UDim2.new(0, 1, 1, 0),
 					Position = UDim2.new(0.5, 0, 0, 0)
 				}), "Stroke"),
-				v103,
-				v104
-			}), "Second") }), v105, second3 }), "Main")
+				closeButton,
+				menuButton
+			}), "Second") }), menuFrame, second3 }), "Main")
 
-	if v97.ShowIcon then
+	if WindowConfig.ShowIcon then
 		text.Position = UDim2.new(0, 50, 0, -24)
-		SetProperties(NewElement("Image", v97.Icon), {
+		SetProperties(NewElement("Image", WindowConfig.Icon), {
 			Size = UDim2.new(0, 20, 0, 20),
 			Position = UDim2.new(0, 25, 0, 15)
 		}).Parent = main.TopBar
 	end
 
-	MakeDraggable(v105, main)
+	MakeDraggable(menuFrame, main)
 
-	local MouseButton1Up = v103.MouseButton1Up
+	local MouseButton1Up = closeButton.MouseButton1Up
 
-	local function v127()
+	local function closeWindow()
 		main.Visible = false
 		RestoreIcon.Visible = true
 		Orion:MakeNotification({
@@ -824,11 +824,11 @@ function Orion.MakeWindow(_, p54)
 			Content = "再见“朋友”有机会回来看啊",
 			Time = 5
 		})
-		v97.CloseCallback()
+		WindowConfig.CloseCallback()
 	end
 
 	if Orion:IsRunning() then
-		local connection = MouseButton1Up:Connect(v127)
+		local connection = MouseButton1Up:Connect(closeWindow)
 		local Connections = Orion.Connections
 
 		table.insert(Connections, connection)
@@ -836,8 +836,8 @@ function Orion.MakeWindow(_, p54)
 
 	local InputBegan = UserInputService.InputBegan
 
-	local function v131(p55, processed)
-		if p55.KeyCode == Enum.KeyCode.RightShift and not processed then
+	local function toggleWindow(key, processed)
+		if key.KeyCode == Enum.KeyCode.RightShift and not processed then
 			if main.Visible then
 				main.Visible = false
 				RestoreIcon.Visible = true
@@ -854,43 +854,43 @@ function Orion.MakeWindow(_, p54)
 	end)
 
 	if Orion:IsRunning() then
-		local connection = InputBegan:Connect(v131)
+		local connection = InputBegan:Connect(toggleWindow)
 		local Connections = Orion.Connections
 
 		table.insert(Connections, connection)
 	end
 
-	local MouseButton1Up2 = v104.MouseButton1Up
+	local MouseButton1Up2 = menuButton.MouseButton1Up
 
-	local function v136()
+	local function onRestoreClick()
 		main.ClipsDescendants = true
 		stroke3.Visible = false
-		v104.Ico.Image = "rbxassetid://7072720870"
+		menuButton.Ico.Image = "rbxassetid://7072720870"
 
-		local v137 = TweenService
-		local v138 = main
+		local tweenService = TweenService
+		local windowHolder = main
 		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 		local uDim2New = UDim2.new
-		local v141 = text.TextBounds.X + 140
+		local introTextWidth = text.TextBounds.X + 140
 
-		v137.Create(v137, v138, tweenInfo, {
-			Size = uDim2New(0, v141, 0, 50)
+		tweenService.Create(tweenService, windowHolder, tweenInfo, {
+			Size = uDim2New(0, introTextWidth, 0, 50)
 		}):Play()
 		wait(0.1)
 		second3.Visible = false
 	end
 
 	if Orion:IsRunning() then
-		local connection = MouseButton1Up2:Connect(v136)
+		local connection = MouseButton1Up2:Connect(onRestoreClick)
 		local Connections = Orion.Connections
 
 		table.insert(Connections, connection)
 	end
 
-	local function v144()
+	local function onMenuClick()
 		main.Visible = false
 
-		local v145 = SetProperties(NewElement("Image", v97.IntroIcon), {
+		local introIcon = SetProperties(NewElement("Image", WindowConfig.IntroIcon), {
 			Parent = ScreenGui,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(0.5, 0, 0.4, 0),
@@ -898,7 +898,7 @@ function Orion.MakeWindow(_, p54)
 			ImageColor3 = Color3.fromRGB(255, 255, 255),
 			ImageTransparency = 1
 		})
-		local v146 = SetProperties(NewElement("Label", v97.IntroText, 14), {
+		local introTextLabel = SetProperties(NewElement("Label", WindowConfig.IntroText, 14), {
 			Parent = ScreenGui,
 			Size = UDim2.new(1, 0, 1, 0),
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -907,59 +907,59 @@ function Orion.MakeWindow(_, p54)
 			Font = Enum.Font.GothamBold,
 			TextTransparency = 1
 		})
-		local v147 = TweenService
+		local tweenService = TweenService
 		local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-		v147.Create(v147, v145, tweenInfo, {
+		tweenService.Create(tweenService, introIcon, tweenInfo, {
 			ImageTransparency = 0,
 			Position = UDim2.new(0.5, 0, 0.5, 0)
 		}):Play()
 		wait(0.8)
 
-		local v149 = TweenService
+		local tweenService = TweenService
 		local tweenInfo2 = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 		local uDim2New = UDim2.new
-		local X = v146.TextBounds.X
+		local X = introTextLabel.TextBounds.X
 
-		v149.Create(v149, v145, tweenInfo2, {
+		tweenService.Create(tweenService, introIcon, tweenInfo2, {
 			Position = uDim2New(0.5, -(X / 2), 0.5, 0)
 		}):Play()
 		wait(0.3)
-		TweenService:Create(v146, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		TweenService:Create(introTextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			TextTransparency = 0
 		}):Play()
 		wait(2)
-		TweenService:Create(v146, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		TweenService:Create(introTextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			TextTransparency = 1
 		}):Play()
 		main.Visible = true
-		v145:Destroy()
-		v146:Destroy()
+		introIcon:Destroy()
+		introTextLabel:Destroy()
 	end
 
-	if v97.IntroEnabled then
-		v144()
+	if WindowConfig.IntroEnabled then
+		onMenuClick()
 	end
 
 	return {
-		MakeTab = function(_, p56)
-			local v153 = p56 or {}
+		MakeTab = function(_, tabConfig)
+			local TabConfig = tabConfig or {}
 
-			v153.Name = v153.Name or "Tab"
-			v153.Icon = v153.Icon or ""
-			v153.PremiumOnly = v153.PremiumOnly or false
+			TabConfig.Name = TabConfig.Name or "Tab"
+			TabConfig.Icon = TabConfig.Icon or ""
+			TabConfig.PremiumOnly = TabConfig.PremiumOnly or false
 
-			local v154 = SetProperties(NewElement("Button"), {
+			local tabButton = SetProperties(NewElement("Button"), {
 				Size = UDim2.new(1, 0, 0, 30),
 				Parent = divider
 			})
-			local t6 = { AddThemeObject(SetProperties(NewElement("Image", v153.Icon), {
+			local iconConfig = { AddThemeObject(SetProperties(NewElement("Image", TabConfig.Icon), {
 					AnchorPoint = Vector2.new(0, 0.5),
 					Size = UDim2.new(0, 18, 0, 18),
 					Position = UDim2.new(0, 10, 0.5, 0),
 					ImageTransparency = 0.4,
 					Name = "Ico"
-				}), "Text"), AddThemeObject(SetProperties(NewElement("Label", v153.Name, 14), {
+				}), "Text"), AddThemeObject(SetProperties(NewElement("Label", TabConfig.Name, 14), {
 					Size = UDim2.new(1, -35, 1, 0),
 					Position = UDim2.new(0, 35, 0, 0),
 					Font = Enum.Font.GothamSemibold,
@@ -967,31 +967,31 @@ function Orion.MakeWindow(_, p54)
 					Name = "Title"
 				}), "Text") }
 
-			table.foreach(t6, function(_, p57)
-				p57.Parent = v154
+			table.foreach(iconConfig, function(_, iconProp)
+				iconProp.Parent = tabButton
 			end)
 
-			local Icon = v153.Icon
-			local v157
+			local Icon = TabConfig.Icon
+			local notificationIcon
 
 			if icons[Icon] == nil then
-				v157 = nil
+				notificationIcon = nil
 			else
-				v157 = icons[Icon]
+				notificationIcon = icons[Icon]
 			end
 
-			if v157 ~= nil then
-				local Ico = v154.Ico
-				local Icon2 = v153.Icon
-				local v160
+			if notificationIcon ~= nil then
+				local Ico = tabButton.Ico
+				local Icon2 = TabConfig.Icon
+				local notificationIcon2
 
 				if icons[Icon2] == nil then
-					v160 = nil
+					notificationIcon2 = nil
 				else
-					v160 = icons[Icon2]
+					notificationIcon2 = icons[Icon2]
 				end
 
-				Ico.Image = v160
+				Ico.Image = notificationIcon2
 			end
 
 			local divider3 = AddThemeObject(SetChildren(SetProperties(NewElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
@@ -1003,43 +1003,43 @@ function Orion.MakeWindow(_, p54)
 			}), { NewElement("List", 0, 6), NewElement("Padding", 15, 10, 10, 15) }), "Divider")
 			local signal2 = divider3.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize")
 
-			local function v163()
+			local function onTabSelected()
 				divider3.CanvasSize = UDim2.new(0, 0, 0, divider3.UIListLayout.AbsoluteContentSize.Y + 30)
 			end
 
 			if Orion:IsRunning() then
-				local connection = signal2:Connect(v163)
+				local connection = signal2:Connect(onTabSelected)
 				local Connections = Orion.Connections
 
 				table.insert(Connections, connection)
 			end
 
-			v154.Ico.ImageTransparency = 0
-			v154.Title.TextTransparency = 0
-			v154.Title.Font = Enum.Font.GothamBlack
+			tabButton.Ico.ImageTransparency = 0
+			tabButton.Title.TextTransparency = 0
+			tabButton.Title.Font = Enum.Font.GothamBlack
 			divider3.Visible = true
 
-			local MouseButton1Click = v154.MouseButton1Click
+			local MouseButton1Click = tabButton.MouseButton1Click
 
-			local function v167()
+			local function onTabHover()
 				local next_ = next
 				local children, key = divider:GetChildren()
 
 				while true do
-					local v171
+					local notifValue
 
-					key, v171 = next_(children, key)
+					key, notifValue = next_(children, key)
 
 					if not key then
 						break
 					end
 
-					if v171:IsA("TextButton") then
-						v171.Title.Font = Enum.Font.GothamSemibold
-						TweenService:Create(v171.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+					if notifValue:IsA("TextButton") then
+						notifValue.Title.Font = Enum.Font.GothamSemibold
+						TweenService:Create(notifValue.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 							ImageTransparency = 0.4
 						}):Play()
-						TweenService:Create(v171.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+						TweenService:Create(notifValue.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 							TextTransparency = 0.4
 						}):Play()
 					end
@@ -1049,108 +1049,108 @@ function Orion.MakeWindow(_, p54)
 				local children2, key2 = main:GetChildren()
 
 				while true do
-					local v175
+					local closeConnValue
 
-					key2, v175 = next_2(children2, key2)
+					key2, closeConnValue = next_2(children2, key2)
 
 					if not key2 then
 						break
 					end
 
-					if v175.Name == "ItemContainer" then
-						v175.Visible = false
+					if closeConnValue.Name == "ItemContainer" then
+						closeConnValue.Visible = false
 					end
 				end
 
-				TweenService:Create(v154.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				TweenService:Create(tabButton.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 					ImageTransparency = 0
 				}):Play()
-				TweenService:Create(v154.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				TweenService:Create(tabButton.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 					TextTransparency = 0
 				}):Play()
-				v154.Title.Font = Enum.Font.GothamBlack
+				tabButton.Title.Font = Enum.Font.GothamBlack
 				divider3.Visible = true
 			end
 
 			if Orion:IsRunning() then
-				local connection = MouseButton1Click:Connect(v167)
+				local connection = MouseButton1Click:Connect(onTabHover)
 				local Connections = Orion.Connections
 
 				table.insert(Connections, connection)
 			end
 
-			local function v178(p58)
+			local function getChildren(childElement)
 				return {
-					AddLabel = function(_, p59)
-						local v179 = AddThemeObject
+					AddLabel = function(_, text)
+						local addThemeFn3 = AddThemeObject
 						local RoundFrame = NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5)
-						local t7 = {
+						local tabChildrenList = {
 							Size = UDim2.new(1, 0, 0, 30),
 							BackgroundTransparency = 0.7,
-							Parent = p58
+							Parent = childElement
 						}
 
-						table.foreach(t7, function(p60, p61)
-							RoundFrame[p60] = p61
+						table.foreach(tabChildrenList, function(key, value)
+							RoundFrame[key] = value
 						end)
 
-						local v182 = AddThemeObject
-						local Label2 = NewElement("Label", p59, 15)
-						local t8 = {
+						local addThemeFn4 = AddThemeObject
+						local Label2 = NewElement("Label", text, 15)
+						local titleChildren = {
 							Size = UDim2.new(1, -12, 1, 0),
 							Position = UDim2.new(0, 12, 0, 0),
 							Font = Enum.Font.GothamBold,
 							Name = "Content"
 						}
 
-						table.foreach(t8, function(p62, p63)
-							Label2[p62] = p63
+						table.foreach(titleChildren, function(key, value)
+							Label2[key] = value
 						end)
 
-						local t9 = { v182(Label2, "Text"), AddThemeObject(NewElement("Stroke"), "Stroke") }
+						local tabButtonProps = { addThemeFn4(Label2, "Text"), AddThemeObject(NewElement("Stroke"), "Stroke") }
 
-						table.foreach(t9, function(_, p64)
-							p64.Parent = RoundFrame
+						table.foreach(tabButtonProps, function(_, tabProp)
+							tabProp.Parent = RoundFrame
 						end)
 
-						local second4 = v179(RoundFrame, "Second")
-						local v187 = nil
+						local second4 = addThemeFn3(RoundFrame, "Second")
+						local labelContent = nil
 
-						local function set(_, p65)
-							v187.Content.Text = p65
+						local function set(_, newText)
+							labelContent.Content.Text = newText
 						end
 
-						v187 = second4
+						labelContent = second4
 
-						local t10 = {
+						local labelProps = {
 							Set = set
 						}
 
-						return t10
+						return labelProps
 					end,
-					AddParagraph = function(_, p66, p67)
-						local text2 = p67 or "Content"
-						local v191 = AddThemeObject
+					AddParagraph = function(_, sectionTitle, sectionContent)
+						local text2 = sectionContent or "Content"
+						local addThemeFn5 = AddThemeObject
 						local RoundFrame = NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5)
-						local t11 = {
+						local contentProps = {
 							Size = UDim2.new(1, 0, 0, 30),
 							BackgroundTransparency = 0.7,
-							Parent = p58
+							Parent = childElement
 						}
 
-						table.foreach(t11, function(p68, p69)
-							RoundFrame[p68] = p69
+						table.foreach(contentProps, function(key, value)
+							RoundFrame[key] = value
 						end)
 
-						local text3 = AddThemeObject(SetProperties(NewElement("Label", p66 or "Text", 15), {
+						local text3 = AddThemeObject(SetProperties(NewElement("Label", sectionTitle or "Text", 15), {
 							Size = UDim2.new(1, -12, 0, 14),
 							Position = UDim2.new(0, 12, 0, 10),
 							Font = Enum.Font.GothamBold,
 							Name = "Title"
 						}), "Text")
-						local v195 = AddThemeObject
+						local addThemeFn6 = AddThemeObject
 						local Label2 = NewElement("Label", "", 13)
-						local t12 = {
+						local sectionProps = {
 							Size = UDim2.new(1, -24, 0, 0),
 							Position = UDim2.new(0, 12, 0, 26),
 							Font = Enum.Font.GothamSemibold,
@@ -1158,26 +1158,26 @@ function Orion.MakeWindow(_, p54)
 							TextWrapped = true
 						}
 
-						table.foreach(t12, function(p70, p71)
-							Label2[p70] = p71
+						table.foreach(sectionProps, function(key, value)
+							Label2[key] = value
 						end)
 
-						local t13 = { text3, v195(Label2, "TextDark"), AddThemeObject(NewElement("Stroke"), "Stroke") }
+						local labelChildren = { text3, addThemeFn6(Label2, "TextDark"), AddThemeObject(NewElement("Stroke"), "Stroke") }
 
-						table.foreach(t13, function(_, p72)
-							p72.Parent = RoundFrame
+						table.foreach(labelChildren, function(_, labelChild)
+							labelChild.Parent = RoundFrame
 						end)
 
-						local second4 = v191(RoundFrame, "Second")
+						local second4 = addThemeFn5(RoundFrame, "Second")
 						local signal3 = second4.Content:GetPropertyChangedSignal("Text")
 
-						local function v201()
+						local function onToggleRender()
 							second4.Content.Size = UDim2.new(1, -24, 0, second4.Content.TextBounds.Y)
 							second4.Size = UDim2.new(1, 0, 0, second4.Content.TextBounds.Y + 35)
 						end
 
 						if Orion:IsRunning() then
-							local connection = signal3:Connect(v201)
+							local connection = signal3:Connect(onToggleRender)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -1186,164 +1186,164 @@ function Orion.MakeWindow(_, p54)
 						second4.Content.Text = text2
 
 						return {
-							Set = function(_, p73)
-								second4.Content.Text = p73
+							Set = function(_, newText)
+								second4.Content.Text = newText
 							end
 						}
 					end,
-					AddButton = function(_, p74)
-						local v204 = p74 or {}
+					AddButton = function(_, toggleConfig)
+						local ToggleConfig = toggleConfig or {}
 
-						v204.Name = v204.Name or "Button"
-						v204.Callback = v204.Callback or function() end
-						v204.Icon = v204.Icon or "rbxassetid://3944703587"
+						ToggleConfig.Name = ToggleConfig.Name or "Button"
+						ToggleConfig.Callback = ToggleConfig.Callback or function() end
+						ToggleConfig.Icon = ToggleConfig.Icon or "rbxassetid://3944703587"
 
-						local t14 = {}
-						local v206 = SetProperties(NewElement("Button"), {
+						local toggleChildren = {}
+						local toggleButton = SetProperties(NewElement("Button"), {
 							Size = UDim2.new(1, 0, 1, 0)
 						})
-						local v207 = AddThemeObject
-						local v208 = SetChildren
+						local addThemeFn7 = AddThemeObject
+						local setChildrenFn4 = SetChildren
 						local RoundFrame = NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5)
-						local t15 = {
+						local toggleVisual = {
 							Size = UDim2.new(1, 0, 0, 33),
-							Parent = p58
+							Parent = childElement
 						}
 
-						table.foreach(t15, function(p75, p76)
-							RoundFrame[p75] = p76
+						table.foreach(toggleVisual, function(key, value)
+							RoundFrame[key] = value
 						end)
 
-						local second4 = v207(v208(RoundFrame, {
-							AddThemeObject(SetProperties(NewElement("Label", v204.Name, 15), {
+						local second4 = addThemeFn7(setChildrenFn4(RoundFrame, {
+							AddThemeObject(SetProperties(NewElement("Label", ToggleConfig.Name, 15), {
 								Size = UDim2.new(1, -12, 1, 0),
 								Position = UDim2.new(0, 12, 0, 0),
 								Font = Enum.Font.GothamBold,
 								Name = "Content"
 							}), "Text"),
-							AddThemeObject(SetProperties(NewElement("Image", v204.Icon), {
+							AddThemeObject(SetProperties(NewElement("Image", ToggleConfig.Icon), {
 								Size = UDim2.new(0, 20, 0, 20),
 								Position = UDim2.new(1, -30, 0, 7)
 							}), "TextDark"),
 							AddThemeObject(NewElement("Stroke"), "Stroke"),
-							v206
+							toggleButton
 						}), "Second")
-						local MouseEnter = v206.MouseEnter
+						local MouseEnter = toggleButton.MouseEnter
 
-						local function v213()
-							local v214 = TweenService
-							local v215 = second4
+						local function onToggleClick()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v218 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local v219 = Orion.Themes[Orion.SelectedTheme]
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local currentTheme = Orion.Themes[Orion.SelectedTheme]
 
-							v214.Create(v214, v215, tweenInfo, {
-								BackgroundColor3 = color3(v218, v219.Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, currentTheme.Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseEnter:Connect(v213)
+							local connection = MouseEnter:Connect(onToggleClick)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseLeave = v206.MouseLeave
+						local MouseLeave = toggleButton.MouseLeave
 
-						local function v223()
-							local v224 = TweenService
-							local v225 = second4
+						local function onToggleChanged()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local v227 = Orion.Themes[Orion.SelectedTheme]
+							local currentTheme = Orion.Themes[Orion.SelectedTheme]
 
-							v224.Create(v224, v225, tweenInfo, {
-								BackgroundColor3 = v227.Second
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = currentTheme.Second
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseLeave:Connect(v223)
+							local connection = MouseLeave:Connect(onToggleChanged)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Up3 = v206.MouseButton1Up
+						local MouseButton1Up3 = toggleButton.MouseButton1Up
 
-						local function v231()
-							local v232 = TweenService
-							local v233 = second4
+						local function onToggleHover()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v236 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local v237 = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
 							local Themes = Orion.Themes
-							local v239 = Orion
-							local v240 = v232.Create(v232, v233, tweenInfo, {
-								BackgroundColor3 = color3(v236, v237, Themes[v239.SelectedTheme].Second.B * 255 + 3)
+							local orionRef2 = Orion
+							local openTween = tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, secondGreen, Themes[orionRef2.SelectedTheme].Second.B * 255 + 3)
 							})
 
-							local function v241()
-								v204.Callback()
+							local function onTogglePress()
+								ToggleConfig.Callback()
 							end
 
-							v240.Play(v240)
-							spawn(v241)
+							openTween.Play(openTween)
+							spawn(onTogglePress)
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Up3:Connect(v231)
+							local connection = MouseButton1Up3:Connect(onToggleHover)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Down = v206.MouseButton1Down
+						local MouseButton1Down = toggleButton.MouseButton1Down
 
-						local function v245()
+						local function onToggleRelease()
 							TweenService:Create(second4, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 								BackgroundColor3 = Color3.fromRGB(Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Down:Connect(v245)
+							local connection = MouseButton1Down:Connect(onToggleRelease)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						function t14.Set(_, p77)
-							second4.Content.Text = p77
+						function toggleChildren.Set(_, toggleValue)
+							second4.Content.Text = toggleValue
 						end
 
-						return t14
+						return toggleChildren
 					end,
-					AddToggle = function(_, p78)
-						local v248 = p78 or {}
+					AddToggle = function(_, colorpickerConfig)
+						local ColorpickerConfig = colorpickerConfig or {}
 
-						v248.Name = v248.Name or "Toggle"
-						v248.Default = v248.Default or false
-						v248.Callback = v248.Callback or function() end
-						v248.Color = v248.Color or Color3.fromRGB(9, 99, 195)
-						v248.Flag = v248.Flag or nil
-						v248.Save = v248.Save or false
+						ColorpickerConfig.Name = ColorpickerConfig.Name or "Toggle"
+						ColorpickerConfig.Default = ColorpickerConfig.Default or false
+						ColorpickerConfig.Callback = ColorpickerConfig.Callback or function() end
+						ColorpickerConfig.Color = ColorpickerConfig.Color or Color3.fromRGB(9, 99, 195)
+						ColorpickerConfig.Flag = ColorpickerConfig.Flag or nil
+						ColorpickerConfig.Save = ColorpickerConfig.Save or false
 
-						local t16 = {
-							Value = v248.Default,
-							Save = v248.Save
+						local colorpickerChildren = {
+							Value = ColorpickerConfig.Default,
+							Save = ColorpickerConfig.Save
 						}
-						local v250 = SetProperties(NewElement("Button"), {
+						local colorButton = SetProperties(NewElement("Button"), {
 							Size = UDim2.new(1, 0, 1, 0)
 						})
-						local v251 = SetChildren(SetProperties(NewElement("RoundFrame", v248.Color, 0, 4), {
+						local colorFrame = SetChildren(SetProperties(NewElement("RoundFrame", ColorpickerConfig.Color, 0, 4), {
 							Size = UDim2.new(0, 24, 0, 24),
 							Position = UDim2.new(1, -24, 0.5, 0),
 							AnchorPoint = Vector2.new(0.5, 0.5)
 						}), { SetProperties(NewElement("Stroke"), {
-								Color = v248.Color,
+								Color = ColorpickerConfig.Color,
 								Name = "Stroke",
 								Transparency = 0.5
 							}), SetProperties(NewElement("Image", "rbxassetid://3944680095"), {
@@ -1355,184 +1355,184 @@ function Orion.MakeWindow(_, p54)
 							}) })
 						local second4 = AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
 							Size = UDim2.new(1, 0, 0, 38),
-							Parent = p58
+							Parent = childElement
 						}), {
-							AddThemeObject(SetProperties(NewElement("Label", v248.Name, 15), {
+							AddThemeObject(SetProperties(NewElement("Label", ColorpickerConfig.Name, 15), {
 								Size = UDim2.new(1, -12, 1, 0),
 								Position = UDim2.new(0, 12, 0, 0),
 								Font = Enum.Font.GothamBold,
 								Name = "Content"
 							}), "Text"),
 							AddThemeObject(NewElement("Stroke"), "Stroke"),
-							v251,
-							v250
+							colorFrame,
+							colorButton
 						}), "Second")
 
-						function t16.Set(_, p79)
-							t16.Value = p79
+						function colorpickerChildren.Set(_, colorpickerValue)
+							colorpickerChildren.Value = colorpickerValue
 
-							local v253 = TweenService
-							local v254 = v251
+							local tweenService = TweenService
+							local colorFrameRef = colorFrame
 							local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local Value_ = t16.Value
+							local Value_ = colorpickerChildren.Value
 
 							if Value_ then
-								Value_ = v248.Color
+								Value_ = ColorpickerConfig.Color
 							end
 
-							v253:Create(v254, tweenInfo, {
+							tweenService:Create(colorFrameRef, tweenInfo, {
 								BackgroundColor3 = Value_ or Orion.Themes.Default.Divider
 							}):Play()
 
-							local v257 = TweenService
-							local Stroke = v251.Stroke
+							local tweenService = TweenService
+							local Stroke = colorFrame.Stroke
 							local tweenInfo2 = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local Value_2 = t16.Value
+							local Value_2 = colorpickerChildren.Value
 
 							if Value_2 then
-								Value_2 = v248.Color
+								Value_2 = ColorpickerConfig.Color
 							end
 
-							v257:Create(Stroke, tweenInfo2, {
+							tweenService:Create(Stroke, tweenInfo2, {
 								Color = Value_2 or Orion.Themes.Default.Stroke
 							}):Play()
 
-							local v261 = TweenService
-							local Ico = v251.Ico
+							local tweenService = TweenService
+							local Ico = colorFrame.Ico
 							local tweenInfo3 = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local v264 = t16.Value and 0 or 1
-							local Value_3 = t16.Value
+							local strokeTrans = colorpickerChildren.Value and 0 or 1
+							local Value_3 = colorpickerChildren.Value
 
 							if not Value_3 then
-								v261:Create(Ico, tweenInfo3, {
-									ImageTransparency = v264,
+								tweenService:Create(Ico, tweenInfo3, {
+									ImageTransparency = strokeTrans,
 									Size = Value_3 or UDim2.new(0, 8, 0, 8)
 								}):Play()
-								v248.Callback(t16.Value)
+								ColorpickerConfig.Callback(colorpickerChildren.Value)
 
 								return
 							end
 
 							Value_3 = UDim2.new(0, 20, 0, 20)
-							v261:Create(Ico, tweenInfo3, {
-								ImageTransparency = v264,
+							tweenService:Create(Ico, tweenInfo3, {
+								ImageTransparency = strokeTrans,
 								Size = Value_3 or UDim2.new(0, 8, 0, 8)
 							}):Play()
-							v248.Callback(t16.Value)
+							ColorpickerConfig.Callback(colorpickerChildren.Value)
 						end
 
-						t16:Set(t16.Value)
+						colorpickerChildren:Set(colorpickerChildren.Value)
 
-						local MouseEnter = v250.MouseEnter
+						local MouseEnter = colorButton.MouseEnter
 
-						local function v267()
-							local v268 = TweenService
-							local v269 = second4
+						local function onColorRender()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v272 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
 
-							v268.Create(v268, v269, tweenInfo, {
-								BackgroundColor3 = color3(v272, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseEnter:Connect(v267)
+							local connection = MouseEnter:Connect(onColorRender)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseLeave = v250.MouseLeave
+						local MouseLeave = colorButton.MouseLeave
 
-						local function v276()
+						local function onColorClick()
 							TweenService:Create(second4, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 								BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Second
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseLeave:Connect(v276)
+							local connection = MouseLeave:Connect(onColorClick)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Up3 = v250.MouseButton1Up
+						local MouseButton1Up3 = colorButton.MouseButton1Up
 
-						local function v280()
-							local v281 = TweenService
-							local v282 = second4
+						local function onColorHover()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v285 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local v286 = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
-							local v287 = Orion
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
+							local orionRef3 = Orion
 
-							v281.Create(v281, v282, tweenInfo, {
-								BackgroundColor3 = color3(v285, v286, v287.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, secondGreen, orionRef3.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
 							}):Play()
 							SaveConfig(game.GameId)
-							t16:Set(not t16.Value)
+							colorpickerChildren:Set(not colorpickerChildren.Value)
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Up3:Connect(v280)
+							local connection = MouseButton1Up3:Connect(onColorHover)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Down = v250.MouseButton1Down
+						local MouseButton1Down = colorButton.MouseButton1Down
 
-						local function v291()
-							local v292 = TweenService
-							local v293 = second4
+						local function onColorChanged()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
 							local Second = Orion.Themes[Orion.SelectedTheme].Second
 
-							v292.Create(v292, v293, tweenInfo, {
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
 								BackgroundColor3 = color3(Second.R * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Down:Connect(v291)
+							local connection = MouseButton1Down:Connect(onColorChanged)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						if not v248.Flag then
-							return t16
+						if not ColorpickerConfig.Flag then
+							return colorpickerChildren
 						end
 
-						Orion.Flags[v248.Flag] = t16
+						Orion.Flags[ColorpickerConfig.Flag] = colorpickerChildren
 
-						return t16
+						return colorpickerChildren
 					end,
-					AddSlider = function(_, p80)
-						local v299 = p80 or {}
+					AddSlider = function(_, sliderConfig)
+						local SliderConfig = sliderConfig or {}
 
-						v299.Name = v299.Name or "Slider"
-						v299.Min = v299.Min or 0
-						v299.Max = v299.Max or 100
-						v299.Increment = v299.Increment or 1
-						v299.Default = v299.Default or 50
-						v299.Callback = v299.Callback or function() end
-						v299.ValueName = v299.ValueName or ""
-						v299.Color = v299.Color or Color3.fromRGB(9, 149, 98)
-						v299.Flag = v299.Flag or nil
-						v299.Save = v299.Save or false
+						SliderConfig.Name = SliderConfig.Name or "Slider"
+						SliderConfig.Min = SliderConfig.Min or 0
+						SliderConfig.Max = SliderConfig.Max or 100
+						SliderConfig.Increment = SliderConfig.Increment or 1
+						SliderConfig.Default = SliderConfig.Default or 50
+						SliderConfig.Callback = SliderConfig.Callback or function() end
+						SliderConfig.ValueName = SliderConfig.ValueName or ""
+						SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
+						SliderConfig.Flag = SliderConfig.Flag or nil
+						SliderConfig.Save = SliderConfig.Save or false
 
-						local t17 = {
-							Value = v299.Default,
-							Save = v299.Save
+						local sliderChildren = {
+							Value = SliderConfig.Default,
+							Save = SliderConfig.Save
 						}
-						local u301 = false
-						local v302 = SetChildren(SetProperties(NewElement("RoundFrame", v299.Color, 0, 5), {
+						local isDragging = false
+						local sliderBar = SetChildren(SetProperties(NewElement("RoundFrame", SliderConfig.Color, 0, 5), {
 							Size = UDim2.new(0, 0, 1, 0),
 							BackgroundTransparency = 0.3,
 							ClipsDescendants = true
@@ -1543,145 +1543,145 @@ function Orion.MakeWindow(_, p54)
 								Name = "Value",
 								TextTransparency = 0
 							}), "Text") })
-						local v303 = SetChildren(SetProperties(NewElement("RoundFrame", v299.Color, 0, 5), {
+						local sliderFill = SetChildren(SetProperties(NewElement("RoundFrame", SliderConfig.Color, 0, 5), {
 							Size = UDim2.new(1, -24, 0, 26),
 							Position = UDim2.new(0, 12, 0, 30),
 							BackgroundTransparency = 0.9
 						}), { SetProperties(NewElement("Stroke"), {
-								Color = v299.Color
+								Color = SliderConfig.Color
 							}), AddThemeObject(SetProperties(NewElement("Label", "value", 13), {
 								Size = UDim2.new(1, -12, 0, 14),
 								Position = UDim2.new(0, 12, 0, 6),
 								Font = Enum.Font.GothamBold,
 								Name = "Value",
 								TextTransparency = 0.8
-							}), "Text"), v302 })
+							}), "Text"), sliderBar })
 
 						AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
 							Size = UDim2.new(1, 0, 0, 65),
-							Parent = p58
-						}), { AddThemeObject(SetProperties(NewElement("Label", v299.Name, 15), {
+							Parent = childElement
+						}), { AddThemeObject(SetProperties(NewElement("Label", SliderConfig.Name, 15), {
 								Size = UDim2.new(1, -12, 0, 14),
 								Position = UDim2.new(0, 12, 0, 10),
 								Font = Enum.Font.GothamBold,
 								Name = "Content"
-							}), "Text"), AddThemeObject(NewElement("Stroke"), "Stroke"), v303 }), "Second")
-						v303.InputBegan:Connect(function(input)
+							}), "Text"), AddThemeObject(NewElement("Stroke"), "Stroke"), sliderFill }), "Second")
+						sliderFill.InputBegan:Connect(function(input)
 							if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 								return
 							end
 
-							u301 = true
+							isDragging = true
 						end)
-						v303.InputEnded:Connect(function(input)
+						sliderFill.InputEnded:Connect(function(input)
 							if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 								return
 							end
 
-							u301 = false
+							isDragging = false
 						end)
 						UserInputService.InputChanged:Connect(function(input)
-							local v304 = u301
+							local isDragging2 = isDragging
 
-							if v304 then
-								v304 = input.UserInputType == Enum.UserInputType.MouseMovement
+							if isDragging2 then
+								isDragging2 = input.UserInputType == Enum.UserInputType.MouseMovement
 							end
 
-							if not v304 then
+							if not isDragging2 then
 								return
 							end
 
-							local v305 = (input.Position.X - v303.AbsolutePosition.X) / v303.AbsoluteSize.X
-							local v306 = math.clamp(v305, 0, 1)
+							local rawValue = (input.Position.X - sliderFill.AbsolutePosition.X) / sliderFill.AbsoluteSize.X
+							local clampedValue = math.clamp(rawValue, 0, 1)
 
-							t17:Set(v299.Min + (v299.Max - v299.Min) * v306)
+							sliderChildren:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * clampedValue)
 							SaveConfig(game.GameId)
 						end)
 
-						function t17.Set(p81, p82)
-							p81.Value = math.clamp(RoundToIncrement(p82, v299.Increment), v299.Min, v299.Max)
+						function sliderChildren.Set(sliderSelf, sliderValue)
+							sliderSelf.Value = math.clamp(RoundToIncrement(sliderValue, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
 
-							local v307 = TweenService
-							local v308 = v302
+							local tweenService = TweenService
+							local sliderBarRef = sliderBar
 							local tweenInfoNew = TweenInfo.new
 							local Quad = Enum.EasingStyle.Quad
 							local Enum_ = Enum
 
-							v307.Create(v307, v308, tweenInfoNew(0.15, Quad, Enum_.EasingDirection.Out), {
-								Size = UDim2.fromScale((p81.Value - v299.Min) / (v299.Max - v299.Min), 1)
+							tweenService.Create(tweenService, sliderBarRef, tweenInfoNew(0.15, Quad, Enum_.EasingDirection.Out), {
+								Size = UDim2.fromScale((sliderSelf.Value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min), 1)
 							}):Play()
 
-							local Value_ = v303.Value
-							local Value_2 = p81.Value
+							local Value_ = sliderFill.Value
+							local Value_2 = sliderSelf.Value
 
-							Value_.Text = tostring(Value_2) .. " " .. v299.ValueName
+							Value_.Text = tostring(Value_2) .. " " .. SliderConfig.ValueName
 
-							local Value_3 = v302.Value
-							local Value_4 = p81.Value
+							local Value_3 = sliderBar.Value
+							local Value_4 = sliderSelf.Value
 
-							Value_3.Text = tostring(Value_4) .. " " .. v299.ValueName
-							v299.Callback(p81.Value)
+							Value_3.Text = tostring(Value_4) .. " " .. SliderConfig.ValueName
+							SliderConfig.Callback(sliderSelf.Value)
 						end
 
-						t17:Set(t17.Value)
+						sliderChildren:Set(sliderChildren.Value)
 
-						if not v299.Flag then
-							return t17
+						if not SliderConfig.Flag then
+							return sliderChildren
 						end
 
-						Orion.Flags[v299.Flag] = t17
+						Orion.Flags[SliderConfig.Flag] = sliderChildren
 
-						return t17
+						return sliderChildren
 					end,
-					AddDropdown = function(_, p83)
-						local v316 = p83 or {}
+					AddDropdown = function(_, dropdownConfig)
+						local DropdownConfig = dropdownConfig or {}
 
-						v316.Name = v316.Name or "Dropdown"
-						v316.Options = v316.Options or {}
-						v316.Default = v316.Default or ""
-						v316.Callback = v316.Callback or function() end
-						v316.Flag = v316.Flag or nil
-						v316.Save = v316.Save or false
+						DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
+						DropdownConfig.Options = DropdownConfig.Options or {}
+						DropdownConfig.Default = DropdownConfig.Default or ""
+						DropdownConfig.Callback = DropdownConfig.Callback or function() end
+						DropdownConfig.Flag = DropdownConfig.Flag or nil
+						DropdownConfig.Save = DropdownConfig.Save or false
 
-						local t18 = {
-							Value = v316.Default,
-							Options = v316.Options,
+						local dropdownChildren = {
+							Value = DropdownConfig.Default,
+							Options = DropdownConfig.Options,
 							Buttons = {},
 							Toggled = false,
 							Type = "Dropdown",
-							Save = v316.Save
+							Save = DropdownConfig.Save
 						}
 
-						if not table.find(t18.Options, t18.Value) then
-							t18.Value = "..."
+						if not table.find(dropdownChildren.Options, dropdownChildren.Value) then
+							dropdownChildren.Value = "..."
 						end
 
 						local List = NewElement("List")
-						local v319 = AddThemeObject
-						local v320 = SetProperties
+						local addThemeFn8 = AddThemeObject
+						local setPropsFn2 = SetProperties
 						local ScrollFrame = NewElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4)
 
-						table.foreach({ List }, function(_, p84)
-							p84.Parent = ScrollFrame
+						table.foreach({ List }, function(_, listItem)
+							listItem.Parent = ScrollFrame
 						end)
 
-						local divider4 = v319(v320(ScrollFrame, {
-							Parent = p58,
+						local divider4 = addThemeFn8(setPropsFn2(ScrollFrame, {
+							Parent = childElement,
 							Position = UDim2.new(0, 0, 0, 38),
 							Size = UDim2.new(1, 0, 1, -38),
 							ClipsDescendants = true
 						}), "Divider")
-						local v323 = SetProperties(NewElement("Button"), {
+						local dropdownButton = SetProperties(NewElement("Button"), {
 							Size = UDim2.new(1, 0, 1, 0)
 						})
 						local second4 = AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
 							Size = UDim2.new(1, 0, 0, 38),
-							Parent = p58,
+							Parent = childElement,
 							ClipsDescendants = true
 						}), {
 							divider4,
 							SetProperties(SetChildren(NewElement("TFrame"), {
-								AddThemeObject(SetProperties(NewElement("Label", v316.Name, 15), {
+								AddThemeObject(SetProperties(NewElement("Label", DropdownConfig.Name, 15), {
 									Size = UDim2.new(1, -12, 1, 0),
 									Position = UDim2.new(0, 12, 0, 0),
 									Font = Enum.Font.GothamBold,
@@ -1706,7 +1706,7 @@ function Orion.MakeWindow(_, p54)
 									Name = "Line",
 									Visible = false
 								}), "Stroke"),
-								v323
+								dropdownButton
 							}), {
 								Size = UDim2.new(1, 0, 0, 38),
 								ClipsDescendants = true,
@@ -1717,19 +1717,19 @@ function Orion.MakeWindow(_, p54)
 						}), "Second")
 						local signal3 = List:GetPropertyChangedSignal("AbsoluteContentSize")
 
-						local function v326()
+						local function onDropdownRender()
 							divider4.CanvasSize = UDim2.new(0, 0, 0, List.AbsoluteContentSize.Y)
 						end
 
 						if Orion:IsRunning() then
-							local connection = signal3:Connect(v326)
+							local connection = signal3:Connect(onDropdownRender)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local function v329(p85)
-							for _, v in pairs(p85) do
+						local function onDropdownClick(dropdownInput)
+							for _, v in pairs(dropdownInput) do
 								local divider5 = AddThemeObject(SetProperties(SetChildren(NewElement("Button", Color3.fromRGB(40, 40, 40)), { NewElement("Corner", 0, 6), AddThemeObject(SetProperties(NewElement("Label", v, 13, 0.4), {
 										Position = UDim2.new(0, 8, 0, 0),
 										Size = UDim2.new(1, -8, 1, 0),
@@ -1742,51 +1742,51 @@ function Orion.MakeWindow(_, p54)
 								}), "Divider")
 								local MouseButton1Click2 = divider5.MouseButton1Click
 
-								local function v334()
-									t18:Set(v)
+								local function onDropdownChanged()
+									dropdownChildren:Set(v)
 									SaveConfig(game.GameId)
 								end
 
 								if Orion:IsRunning() then
-									local connection = MouseButton1Click2:Connect(v334)
+									local connection = MouseButton1Click2:Connect(onDropdownChanged)
 									local Connections = Orion.Connections
 
 									table.insert(Connections, connection)
 								end
 
-								t18.Buttons[v] = divider5
+								dropdownChildren.Buttons[v] = divider5
 							end
 						end
 
-						function t18.Refresh(_, p86, p87)
-							if not p87 then
-								t18.Options = p86
-								v329(t18.Options)
+						function dropdownChildren.Refresh(_, newList, newDefault)
+							if not newDefault then
+								dropdownChildren.Options = newList
+								onDropdownClick(dropdownChildren.Options)
 
 								return
 							end
 
-							for _, button in pairs(t18.Buttons) do
+							for _, button in pairs(dropdownChildren.Buttons) do
 								button:Destroy()
 							end
 
-							table.clear(t18.Options)
-							table.clear(t18.Buttons)
-							t18.Options = p86
-							v329(t18.Options)
+							table.clear(dropdownChildren.Options)
+							table.clear(dropdownChildren.Buttons)
+							dropdownChildren.Options = newList
+							onDropdownClick(dropdownChildren.Options)
 						end
-						function t18.Set(_, p88)
-							if table.find(t18.Options, p88) then
-								t18.Value = p88
-								second4.F.Selected.Text = t18.Value
+						function dropdownChildren.Set(_, dropdownValue)
+							if table.find(dropdownChildren.Options, dropdownValue) then
+								dropdownChildren.Value = dropdownValue
+								second4.F.Selected.Text = dropdownChildren.Value
 
-								for _, button in pairs(t18.Buttons) do
-									local v341 = TweenService
+								for _, button in pairs(dropdownChildren.Buttons) do
+									local tweenService = TweenService
 									local tweenInfoNew = TweenInfo.new
 									local Quad = Enum.EasingStyle.Quad
 									local EasingDirection = Enum.EasingDirection
 
-									v341.Create(v341, button, tweenInfoNew(0.15, Quad, EasingDirection.Out), {
+									tweenService.Create(tweenService, button, tweenInfoNew(0.15, Quad, EasingDirection.Out), {
 										BackgroundTransparency = 1
 									}):Play()
 									TweenService:Create(button.Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -1794,19 +1794,19 @@ function Orion.MakeWindow(_, p54)
 									}):Play()
 								end
 
-								TweenService:Create(t18.Buttons[p88], TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								TweenService:Create(dropdownChildren.Buttons[dropdownValue], TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 									BackgroundTransparency = 0
 								}):Play()
-								TweenService:Create(t18.Buttons[p88].Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								TweenService:Create(dropdownChildren.Buttons[dropdownValue].Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 									TextTransparency = 0
 								}):Play()
 
-								return v316.Callback(t18.Value)
+								return DropdownConfig.Callback(dropdownChildren.Value)
 							else
-								t18.Value = "..."
-								second4.F.Selected.Text = t18.Value
+								dropdownChildren.Value = "..."
+								second4.F.Selected.Text = dropdownChildren.Value
 
-								for _, button in pairs(t18.Buttons) do
+								for _, button in pairs(dropdownChildren.Buttons) do
 									TweenService:Create(button, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 										BackgroundTransparency = 1
 									}):Play()
@@ -1817,28 +1817,28 @@ function Orion.MakeWindow(_, p54)
 							end
 						end
 
-						AddConnection(v323.MouseButton1Click, function()
-							t18.Toggled = not t18.Toggled
-							second4.F.Line.Visible = t18.Toggled
+						AddConnection(dropdownButton.MouseButton1Click, function()
+							dropdownChildren.Toggled = not dropdownChildren.Toggled
+							second4.F.Line.Visible = dropdownChildren.Toggled
 
-							local v347 = TweenService
+							local tweenService = TweenService
 							local Ico = second4.F.Ico
 							local tweenInfoNew = TweenInfo.new
 							local Enum_ = Enum
 
-							v347.Create(v347, Ico, tweenInfoNew(0.15, Enum_.EasingStyle.Quad, Enum.EasingDirection.Out), {
-								Rotation = t18.Toggled and 180 or 0
+							tweenService.Create(tweenService, Ico, tweenInfoNew(0.15, Enum_.EasingStyle.Quad, Enum.EasingDirection.Out), {
+								Rotation = dropdownChildren.Toggled and 180 or 0
 							}):Play()
 
-							if #t18.Options > 5 then
-								local v351 = TweenService
-								local v352 = second4
+							if #dropdownChildren.Options > 5 then
+								local tweenService = TweenService
+								local tweenService2 = second4
 								local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 								local s1 = "Size"
-								local Toggled = t18.Toggled
+								local Toggled = dropdownChildren.Toggled
 
 								if not Toggled then
-									v351:Create(v352, tweenInfo, {
+									tweenService:Create(tweenService2, tweenInfo, {
 										[s1] = Toggled or UDim2.new(1, 0, 0, 38)
 									}):Play()
 
@@ -1846,18 +1846,18 @@ function Orion.MakeWindow(_, p54)
 								end
 
 								Toggled = UDim2.new(1, 0, 0, 178)
-								v351:Create(v352, tweenInfo, {
+								tweenService:Create(tweenService2, tweenInfo, {
 									[s1] = Toggled or UDim2.new(1, 0, 0, 38)
 								}):Play()
 							else
-								local v356 = TweenService
-								local v357 = second4
+								local tweenService = TweenService
+								local tweenService2 = second4
 								local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 								local s2 = "Size"
-								local Toggled = t18.Toggled
+								local Toggled = dropdownChildren.Toggled
 
 								if not Toggled then
-									v356:Create(v357, tweenInfo, {
+									tweenService:Create(tweenService2, tweenInfo, {
 										[s2] = Toggled or UDim2.new(1, 0, 0, 38)
 									}):Play()
 
@@ -1865,57 +1865,57 @@ function Orion.MakeWindow(_, p54)
 								end
 
 								Toggled = UDim2.new(1, 0, 0, List.AbsoluteContentSize.Y + 38)
-								v356:Create(v357, tweenInfo, {
+								tweenService:Create(tweenService2, tweenInfo, {
 									[s2] = Toggled or UDim2.new(1, 0, 0, 38)
 								}):Play()
 							end
 						end)
-						t18:Refresh(t18.Options, false)
-						t18:Set(t18.Value)
+						dropdownChildren:Refresh(dropdownChildren.Options, false)
+						dropdownChildren:Set(dropdownChildren.Value)
 
-						if not v316.Flag then
-							return t18
+						if not DropdownConfig.Flag then
+							return dropdownChildren
 						end
 
-						Orion.Flags[v316.Flag] = t18
+						Orion.Flags[DropdownConfig.Flag] = dropdownChildren
 
-						return t18
+						return dropdownChildren
 					end,
-					AddBind = function(_, p89)
-						p89.Name = p89.Name or "Bind"
-						p89.Default = p89.Default or Enum.KeyCode.Unknown
-						p89.Hold = p89.Hold or false
-						p89.Callback = p89.Callback or function() end
-						p89.Flag = p89.Flag or nil
-						p89.Save = p89.Save or false
+					AddBind = function(_, bindConfig)
+						bindConfig.Name = bindConfig.Name or "Bind"
+						bindConfig.Default = bindConfig.Default or Enum.KeyCode.Unknown
+						bindConfig.Hold = bindConfig.Hold or false
+						bindConfig.Callback = bindConfig.Callback or function() end
+						bindConfig.Flag = bindConfig.Flag or nil
+						bindConfig.Save = bindConfig.Save or false
 
-						local t19 = {
+						local bindChildren = {
 							Value = nil,
 							Binding = false,
 							Type = "Bind",
-							Save = p89.Save
+							Save = bindConfig.Save
 						}
-						local u362 = false
-						local v363 = SetProperties(NewElement("Button"), {
+						local isHolding = false
+						local bindButton = SetProperties(NewElement("Button"), {
 							Size = UDim2.new(1, 0, 1, 0)
 						})
 						local main2 = AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
 							Size = UDim2.new(0, 24, 0, 24),
 							Position = UDim2.new(1, -12, 0.5, 0),
 							AnchorPoint = Vector2.new(1, 0.5)
-						}), { AddThemeObject(NewElement("Stroke"), "Stroke"), AddThemeObject(SetProperties(NewElement("Label", p89.Name, 14), {
+						}), { AddThemeObject(NewElement("Stroke"), "Stroke"), AddThemeObject(SetProperties(NewElement("Label", bindConfig.Name, 14), {
 								Size = UDim2.new(1, 0, 1, 0),
 								Font = Enum.Font.GothamBold,
 								TextXAlignment = Enum.TextXAlignment.Center,
 								Name = "Value"
 							}), "Text") }), "Main")
-						local v365 = AddThemeObject
-						local v366 = SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
+						local addThemeFn9 = AddThemeObject
+						local bindFrame = SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
 							Size = UDim2.new(1, 0, 0, 38),
-							Parent = p58
+							Parent = childElement
 						})
-						local t20 = {
-							AddThemeObject(SetProperties(NewElement("Label", p89.Name, 15), {
+						local bindVisual = {
+							AddThemeObject(SetProperties(NewElement("Label", bindConfig.Name, 15), {
 								Size = UDim2.new(1, -12, 1, 0),
 								Position = UDim2.new(0, 12, 0, 0),
 								Font = Enum.Font.GothamBold,
@@ -1923,50 +1923,50 @@ function Orion.MakeWindow(_, p54)
 							}), "Text"),
 							AddThemeObject(NewElement("Stroke"), "Stroke"),
 							main2,
-							v363
+							bindButton
 						}
 
-						table.foreach(t20, function(_, p90)
-							p90.Parent = v366
+						table.foreach(bindVisual, function(_, bindChild)
+							bindChild.Parent = bindFrame
 						end)
 
-						local second4 = v365(v366, "Second")
+						local second4 = addThemeFn9(bindFrame, "Second")
 						local signal3 = main2.Value:GetPropertyChangedSignal("Text")
 
-						local function v370()
-							local v371 = TweenService
-							local v372 = main2
+						local function onBindRender()
+							local tweenService = TweenService
+							local parentElement = main2
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
-							v371.Create(v371, v372, tweenInfo, {
+							tweenService.Create(tweenService, parentElement, tweenInfo, {
 								Size = UDim2.new(0, main2.Value.TextBounds.X + 16, 0, 24)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = signal3:Connect(v370)
+							local connection = signal3:Connect(onBindRender)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local InputEnded = v363.InputEnded
+						local InputEnded = bindButton.InputEnded
 
-						local function v377(p91)
-							if p91.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						local function onBindClick(input)
+							if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 								return
 							end
 
-							if t19.Binding then
+							if bindChildren.Binding then
 								return
 							end
 
-							t19.Binding = true
+							bindChildren.Binding = true
 							main2.Value.Text = ""
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputEnded:Connect(v377)
+							local connection = InputEnded:Connect(onBindClick)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -1974,69 +1974,69 @@ function Orion.MakeWindow(_, p54)
 
 						local InputBegan2 = UserInputService.InputBegan
 
-						local function v381(p92)
+						local function onKeyPressed(input)
 							if UserInputService:GetFocusedTextBox() then
 								return
 							end
 
-							local v382 = p92.KeyCode.Name == t19.Value or p92.UserInputType.Name == t19.Value
+							local isKeyMatch = input.KeyCode.Name == bindChildren.Value or input.UserInputType.Name == bindChildren.Value
 
-							if v382 then
-								v382 = not t19.Binding
+							if isKeyMatch then
+								isKeyMatch = not bindChildren.Binding
 							end
 
-							if v382 then
-								if p89.Hold then
-									u362 = true
-									p89.Callback(u362)
+							if isKeyMatch then
+								if bindConfig.Hold then
+									isHolding = true
+									bindConfig.Callback(isHolding)
 
 									return
 								else
-									p89.Callback()
+									bindConfig.Callback()
 
 									return
 								end
 							end
 
-							if not t19.Binding then
+							if not bindChildren.Binding then
 								return
 							end
 
 							local KeyCode = nil
 
-							local function v384()
-								if IsInList(IgnoredKeys, p92.KeyCode) then
+							local function onKeyHeld()
+								if IsInList(IgnoredKeys, input.KeyCode) then
 									return
 								end
 
-								KeyCode = p92.KeyCode
+								KeyCode = input.KeyCode
 							end
 
 							KeyCode = nil
-							pcall(v384)
+							pcall(onKeyHeld)
 
-							local function v385()
-								local v386 = IsInList(MouseInputTypes, p92.UserInputType)
+							local function onKeyReleased()
+								local isMouseInput = IsInList(MouseInputTypes, input.UserInputType)
 
-								if v386 then
-									v386 = not KeyCode
+								if isMouseInput then
+									isMouseInput = not KeyCode
 								end
 
-								if not v386 then
+								if not isMouseInput then
 									return
 								end
 
-								KeyCode = p92.UserInputType
+								KeyCode = input.UserInputType
 							end
 
-							pcall(v385)
-							KeyCode = KeyCode or t19.Value
-							t19:Set(KeyCode)
+							pcall(onKeyReleased)
+							KeyCode = KeyCode or bindChildren.Value
+							bindChildren:Set(KeyCode)
 							SaveConfig(game.GameId)
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputBegan2:Connect(v381)
+							local connection = InputBegan2:Connect(onKeyPressed)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -2044,145 +2044,145 @@ function Orion.MakeWindow(_, p54)
 
 						local InputEnded2 = UserInputService.InputEnded
 
-						local function v390(p93)
-							if not (p93.KeyCode.Name == t19.Value or p93.UserInputType.Name == t19.Value) then
+						local function onBindChanged(newBindValue)
+							if not (newBindValue.KeyCode.Name == bindChildren.Value or newBindValue.UserInputType.Name == bindChildren.Value) then
 								return
 							end
 
-							local Hold = p89.Hold
+							local Hold = bindConfig.Hold
 
 							if Hold then
-								Hold = u362
+								Hold = isHolding
 							end
 
 							if not Hold then
 								return
 							end
 
-							u362 = false
-							p89.Callback(u362)
+							isHolding = false
+							bindConfig.Callback(isHolding)
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputEnded2:Connect(v390)
+							local connection = InputEnded2:Connect(onBindChanged)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseEnter = v363.MouseEnter
+						local MouseEnter = bindButton.MouseEnter
 
-						local function v395()
-							local v396 = TweenService
-							local v397 = second4
+						local function onBindHover()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v400 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local v401 = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
-							local v402 = Orion.Themes[Orion.SelectedTheme].Second.B * 255
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
+							local secondBlue = Orion.Themes[Orion.SelectedTheme].Second.B * 255
 
-							v396.Create(v396, v397, tweenInfo, {
-								BackgroundColor3 = color3(v400, v401, v402 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, secondGreen, secondBlue + 3)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseEnter:Connect(v395)
+							local connection = MouseEnter:Connect(onBindHover)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseLeave = v363.MouseLeave
+						local MouseLeave = bindButton.MouseLeave
 
-						local function v406()
-							local v407 = TweenService
-							local v408 = second4
+						local function onBindPress()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local Themes = Orion.Themes
-							local v411 = Orion
+							local orionRef4 = Orion
 
-							v407.Create(v407, v408, tweenInfo, {
-								BackgroundColor3 = Themes[v411.SelectedTheme].Second
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = Themes[orionRef4.SelectedTheme].Second
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseLeave:Connect(v406)
+							local connection = MouseLeave:Connect(onBindPress)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Up3 = v363.MouseButton1Up
+						local MouseButton1Up3 = bindButton.MouseButton1Up
 
-						local function v415()
-							local v416 = TweenService
-							local v417 = second4
+						local function onBindRelease()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v420 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
 							local Themes = Orion.Themes
-							local v422 = Orion
+							local orionRef5 = Orion
 
-							v416.Create(v416, v417, tweenInfo, {
-								BackgroundColor3 = color3(v420, Themes[v422.SelectedTheme].Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, Themes[orionRef5.SelectedTheme].Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Up3:Connect(v415)
+							local connection = MouseButton1Up3:Connect(onBindRelease)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Down = v363.MouseButton1Down
+						local MouseButton1Down = bindButton.MouseButton1Down
 
-						local function v426()
-							local v427 = TweenService
-							local v428 = second4
+						local function onBindFocusLost()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local Color3_ = Color3
 
-							v427.Create(v427, v428, tweenInfo, {
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
 								BackgroundColor3 = Color3_.fromRGB(Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Down:Connect(v426)
+							local connection = MouseButton1Down:Connect(onBindFocusLost)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						function t19.Set(_, p94)
-							t19.Binding = false
-							t19.Value = p94 or t19.Value
-							t19.Value = t19.Value.Name or t19.Value
-							main2.Value.Text = t19.Value
+						function bindChildren.Set(_, bindValue)
+							bindChildren.Binding = false
+							bindChildren.Value = bindValue or bindChildren.Value
+							bindChildren.Value = bindChildren.Value.Name or bindChildren.Value
+							main2.Value.Text = bindChildren.Value
 						end
 
-						t19:Set(p89.Default)
+						bindChildren:Set(bindConfig.Default)
 
-						if not p89.Flag then
-							return t19
+						if not bindConfig.Flag then
+							return bindChildren
 						end
 
-						Orion.Flags[p89.Flag] = t19
+						Orion.Flags[bindConfig.Flag] = bindChildren
 
-						return t19
+						return bindChildren
 					end,
-					AddTextbox = function(_, p95)
-						local v433 = p95 or {}
+					AddTextbox = function(_, textboxConfig)
+						local TextboxConfig = textboxConfig or {}
 
-						v433.Name = v433.Name or "Textbox"
-						v433.Default = v433.Default or ""
-						v433.TextDisappear = v433.TextDisappear or false
-						v433.Callback = v433.Callback or function() end
+						TextboxConfig.Name = TextboxConfig.Name or "Textbox"
+						TextboxConfig.Default = TextboxConfig.Default or ""
+						TextboxConfig.TextDisappear = TextboxConfig.TextDisappear or false
+						TextboxConfig.Callback = TextboxConfig.Callback or function() end
 
-						local v434 = SetProperties(NewElement("Button"), {
+						local textboxButton = SetProperties(NewElement("Button"), {
 							Size = UDim2.new(1, 0, 1, 0)
 						})
 						local text2 = AddThemeObject(CreateInstance("TextBox", {
@@ -2201,13 +2201,13 @@ function Orion.MakeWindow(_, p54)
 							Position = UDim2.new(1, -12, 0.5, 0),
 							AnchorPoint = Vector2.new(1, 0.5)
 						}), { AddThemeObject(NewElement("Stroke"), "Stroke"), text2 }), "Main")
-						local v437 = AddThemeObject
-						local v438 = SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
+						local addThemeFn10 = AddThemeObject
+						local textboxFrame = SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
 							Size = UDim2.new(1, 0, 0, 38),
-							Parent = p58
+							Parent = childElement
 						})
-						local t21 = {
-							AddThemeObject(SetProperties(NewElement("Label", v433.Name, 15), {
+						local textboxVisual = {
+							AddThemeObject(SetProperties(NewElement("Label", TextboxConfig.Name, 15), {
 								Size = UDim2.new(1, -12, 1, 0),
 								Position = UDim2.new(0, 12, 0, 0),
 								Font = Enum.Font.GothamBold,
@@ -2215,30 +2215,30 @@ function Orion.MakeWindow(_, p54)
 							}), "Text"),
 							AddThemeObject(NewElement("Stroke"), "Stroke"),
 							main2,
-							v434
+							textboxButton
 						}
 
-						table.foreach(t21, function(_, p96)
-							p96.Parent = v438
+						table.foreach(textboxVisual, function(_, textboxChild)
+							textboxChild.Parent = textboxFrame
 						end)
 
-						local second4 = v437(v438, "Second")
+						local second4 = addThemeFn10(textboxFrame, "Second")
 						local signal3 = text2:GetPropertyChangedSignal("Text")
 
-						local function v442()
-							local v443 = TweenService
-							local v444 = main2
+						local function onTextboxRender()
+							local tweenService = TweenService
+							local parentElement = main2
 							local tweenInfo = TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local uDim2New = UDim2.new
 							local TextBounds = text2.TextBounds
 
-							v443.Create(v443, v444, tweenInfo, {
+							tweenService.Create(tweenService, parentElement, tweenInfo, {
 								Size = uDim2New(0, TextBounds.X + 16, 0, 24)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = signal3:Connect(v442)
+							local connection = signal3:Connect(onTextboxRender)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -2246,10 +2246,10 @@ function Orion.MakeWindow(_, p54)
 
 						local FocusLost = text2.FocusLost
 
-						local function v451()
-							v433.Callback(text2.Text)
+						local function onTextboxChanged()
+							TextboxConfig.Callback(text2.Text)
 
-							if not v433.TextDisappear then
+							if not TextboxConfig.TextDisappear then
 								return
 							end
 
@@ -2257,94 +2257,94 @@ function Orion.MakeWindow(_, p54)
 						end
 
 						if Orion:IsRunning() then
-							local connection = FocusLost:Connect(v451)
+							local connection = FocusLost:Connect(onTextboxChanged)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						text2.Text = v433.Default
+						text2.Text = TextboxConfig.Default
 
-						local MouseEnter = v434.MouseEnter
+						local MouseEnter = textboxButton.MouseEnter
 
-						local function v455()
-							local v456 = TweenService
-							local v457 = second4
+						local function onTextboxFocus()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v460 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local v461 = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
-							local v462 = Orion.Themes[Orion.SelectedTheme]
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
+							local currentTheme = Orion.Themes[Orion.SelectedTheme]
 
-							v456.Create(v456, v457, tweenInfo, {
-								BackgroundColor3 = color3(v460, v461, v462.Second.B * 255 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, secondGreen, currentTheme.Second.B * 255 + 3)
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseEnter:Connect(v455)
+							local connection = MouseEnter:Connect(onTextboxFocus)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseLeave = v434.MouseLeave
+						local MouseLeave = textboxButton.MouseLeave
 
-						local function v466()
-							local v467 = TweenService
-							local v468 = second4
+						local function onTextboxFocusLost()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local v470 = Orion.Themes[Orion.SelectedTheme]
+							local currentTheme = Orion.Themes[Orion.SelectedTheme]
 
-							v467.Create(v467, v468, tweenInfo, {
-								BackgroundColor3 = v470.Second
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = currentTheme.Second
 							}):Play()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseLeave:Connect(v466)
+							local connection = MouseLeave:Connect(onTextboxFocusLost)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Up3 = v434.MouseButton1Up
+						local MouseButton1Up3 = textboxButton.MouseButton1Up
 
-						local function v474()
-							local v475 = TweenService
-							local v476 = second4
+						local function onTextboxSubmit()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v479 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local v480 = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
+							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
 							local Themes = Orion.Themes
 
-							v475.Create(v475, v476, tweenInfo, {
-								BackgroundColor3 = color3(v479, v480, Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, secondGreen, Themes[Orion.SelectedTheme].Second.B * 255 + 3)
 							}):Play()
 							text2:CaptureFocus()
 						end
 
 						if Orion:IsRunning() then
-							local connection = MouseButton1Up3:Connect(v474)
+							local connection = MouseButton1Up3:Connect(onTextboxSubmit)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						local MouseButton1Down = v434.MouseButton1Down
+						local MouseButton1Down = textboxButton.MouseButton1Down
 
-						local function v485()
-							local v486 = TweenService
-							local v487 = second4
+						local function onTextboxClear()
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 							local color3 = Color3.fromRGB
-							local v490 = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 6
-							local v491 = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6
-							local v492 = Orion
+							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 6
+							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6
+							local orionRef6 = Orion
 
-							v486.Create(v486, v487, tweenInfo, {
-								BackgroundColor3 = color3(v490, v491, v492.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
+							tweenService.Create(tweenService, tweenService2, tweenInfo, {
+								BackgroundColor3 = color3(secondRed, secondGreen, orionRef6.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
 							}):Play()
 						end
 
@@ -2352,33 +2352,33 @@ function Orion.MakeWindow(_, p54)
 							return
 						end
 
-						local connection = MouseButton1Down:Connect(v485)
+						local connection = MouseButton1Down:Connect(onTextboxClear)
 						local Connections = Orion.Connections
 
 						table.insert(Connections, connection)
 					end,
-					AddColorpicker = function(_, p97)
-						local v495 = p97 or {}
+					AddColorpicker = function(_, paragraphConfig)
+						local ParagraphConfig = paragraphConfig or {}
 
-						v495.Name = v495.Name or "Colorpicker"
-						v495.Default = v495.Default or Color3.fromRGB(255, 255, 255)
-						v495.Callback = v495.Callback or function() end
-						v495.Flag = v495.Flag or nil
-						v495.Save = v495.Save or false
+						ParagraphConfig.Name = ParagraphConfig.Name or "Colorpicker"
+						ParagraphConfig.Default = ParagraphConfig.Default or Color3.fromRGB(255, 255, 255)
+						ParagraphConfig.Callback = ParagraphConfig.Callback or function() end
+						ParagraphConfig.Flag = ParagraphConfig.Flag or nil
+						ParagraphConfig.Save = ParagraphConfig.Save or false
 
-						local n1 = 1
-						local n2 = 1
-						local n3 = 1
+						local hue = 1
+						local saturation = 1
+						local brightness = 1
 						local ColorInput, HueInput = nil, nil
-						local t22 = {
-							Value = v495.Default,
+						local colorpickerElements = {
+							Value = ParagraphConfig.Default,
 							Toggled = false,
 							Type = "Colorpicker",
-							Save = v495.Save
+							Save = ParagraphConfig.Save
 						}
 						local ImageLabel = CreateInstance("ImageLabel", {
 							Size = UDim2.new(0, 18, 0, 18),
-							Position = UDim2.new(select(3, Color3.toHSV(t22.Value))),
+							Position = UDim2.new(select(3, Color3.toHSV(colorpickerElements.Value))),
 							ScaleType = Enum.ScaleType.Fit,
 							AnchorPoint = Vector2.new(0.5, 0.5),
 							BackgroundTransparency = 1,
@@ -2386,7 +2386,7 @@ function Orion.MakeWindow(_, p54)
 						})
 						local ImageLabel2 = CreateInstance("ImageLabel", {
 							Size = UDim2.new(0, 18, 0, 18),
-							Position = UDim2.new(0.5, 0, 1 - select(1, Color3.toHSV(t22.Value))),
+							Position = UDim2.new(0.5, 0, 1 - select(1, Color3.toHSV(colorpickerElements.Value))),
 							ScaleType = Enum.ScaleType.Fit,
 							AnchorPoint = Vector2.new(0.5, 0.5),
 							BackgroundTransparency = 1,
@@ -2428,7 +2428,7 @@ function Orion.MakeWindow(_, p54)
 								PaddingBottom = UDim.new(0, 10),
 								PaddingTop = UDim.new(0, 17)
 							}) })
-						local v505 = SetProperties(NewElement("Button"), {
+						local colorButton2 = SetProperties(NewElement("Button"), {
 							Size = UDim2.new(1, 0, 1, 0)
 						})
 						local main2 = AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
@@ -2438,16 +2438,16 @@ function Orion.MakeWindow(_, p54)
 						}), { AddThemeObject(NewElement("Stroke"), "Stroke") }), "Main")
 						local second4 = AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
 							Size = UDim2.new(1, 0, 0, 38),
-							Parent = p58
+							Parent = childElement
 						}), { SetProperties(SetChildren(NewElement("TFrame"), {
-								AddThemeObject(SetProperties(NewElement("Label", v495.Name, 15), {
+								AddThemeObject(SetProperties(NewElement("Label", ParagraphConfig.Name, 15), {
 									Size = UDim2.new(1, -12, 1, 0),
 									Position = UDim2.new(0, 12, 0, 0),
 									Font = Enum.Font.GothamBold,
 									Name = "Content"
 								}), "Text"),
 								main2,
-								v505,
+								colorButton2,
 								AddThemeObject(SetProperties(NewElement("Frame"), {
 									Size = UDim2.new(1, 0, 0, 1),
 									Position = UDim2.new(0, 0, 1, -1),
@@ -2459,34 +2459,34 @@ function Orion.MakeWindow(_, p54)
 								ClipsDescendants = true,
 								Name = "F"
 							}), Frame2, AddThemeObject(NewElement("Stroke"), "Stroke") }), "Second")
-						local MouseButton1Click2 = v505.MouseButton1Click
+						local MouseButton1Click2 = colorButton2.MouseButton1Click
 
 						local function toggleToggled()
-							t22.Toggled = not t22.Toggled
+							colorpickerElements.Toggled = not colorpickerElements.Toggled
 
-							local v510 = TweenService
-							local v511 = second4
+							local tweenService = TweenService
+							local tweenService2 = second4
 							local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-							local Toggled = t22.Toggled
+							local Toggled = colorpickerElements.Toggled
 
 							if not Toggled then
-								v510:Create(v511, tweenInfo, {
+								tweenService:Create(tweenService2, tweenInfo, {
 									Size = Toggled or UDim2.new(1, 0, 0, 38)
 								}):Play()
-								ImageLabel3.Visible = t22.Toggled
-								Frame.Visible = t22.Toggled
-								second4.F.Line.Visible = t22.Toggled
+								ImageLabel3.Visible = colorpickerElements.Toggled
+								Frame.Visible = colorpickerElements.Toggled
+								second4.F.Line.Visible = colorpickerElements.Toggled
 
 								return
 							end
 
 							Toggled = UDim2.new(1, 0, 0, 148)
-							v510:Create(v511, tweenInfo, {
+							tweenService:Create(tweenService2, tweenInfo, {
 								Size = Toggled or UDim2.new(1, 0, 0, 38)
 							}):Play()
-							ImageLabel3.Visible = t22.Toggled
-							Frame.Visible = t22.Toggled
-							second4.F.Line.Visible = t22.Toggled
+							ImageLabel3.Visible = colorpickerElements.Toggled
+							Frame.Visible = colorpickerElements.Toggled
+							second4.F.Line.Visible = colorpickerElements.Toggled
 						end
 
 						if Orion:IsRunning() then
@@ -2496,27 +2496,27 @@ function Orion.MakeWindow(_, p54)
 							table.insert(Connections, connection)
 						end
 
-						local function v516()
-							main2.BackgroundColor3 = Color3.fromHSV(n1, n2, n3)
-							ImageLabel3.BackgroundColor3 = Color3.fromHSV(n1, 1, 1)
-							t22:Set(main2.BackgroundColor3)
-							v495.Callback(main2.BackgroundColor3)
+						local function onSliderRender()
+							main2.BackgroundColor3 = Color3.fromHSV(hue, saturation, brightness)
+							ImageLabel3.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+							colorpickerElements:Set(main2.BackgroundColor3)
+							ParagraphConfig.Callback(main2.BackgroundColor3)
 							SaveConfig(game.GameId)
 						end
 
-						local v517 = ImageLabel2.AbsolutePosition.Y - Frame.AbsolutePosition.Y
+						local mouseOffsetY = ImageLabel2.AbsolutePosition.Y - Frame.AbsolutePosition.Y
 						local Y = Frame.AbsoluteSize.Y
-						local _ = 1 - math.clamp(v517, 0, Y) / Frame.AbsoluteSize.Y
-						local v520 = ImageLabel.AbsolutePosition.X - ImageLabel3.AbsolutePosition.X
+						local _ = 1 - math.clamp(mouseOffsetY, 0, Y) / Frame.AbsoluteSize.Y
+						local offsetX = ImageLabel.AbsolutePosition.X - ImageLabel3.AbsolutePosition.X
 						local X = ImageLabel3.AbsoluteSize.X
-						local _ = math.clamp(v520, 0, X) / ImageLabel3.AbsoluteSize.X
-						local v523 = ImageLabel.AbsolutePosition.Y - ImageLabel3.AbsolutePosition.Y
+						local _ = math.clamp(offsetX, 0, X) / ImageLabel3.AbsoluteSize.X
+						local offsetY = ImageLabel.AbsolutePosition.Y - ImageLabel3.AbsolutePosition.Y
 						local Y2 = ImageLabel3.AbsoluteSize.Y
-						local _ = 1 - math.clamp(v523, 0, Y2) / ImageLabel3.AbsoluteSize.Y
+						local _ = 1 - math.clamp(offsetY, 0, Y2) / ImageLabel3.AbsoluteSize.Y
 						local InputBegan2 = ImageLabel3.InputBegan
 
-						local function v527(p98)
-							if p98.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						local function onSliderClick(input)
+							if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 								return
 							end
 
@@ -2526,25 +2526,25 @@ function Orion.MakeWindow(_, p54)
 
 							local RenderStepped = RunService.RenderStepped
 
-							local function v529()
-								local v530 = mouse.X - ImageLabel3.AbsolutePosition.X
+							local function onSliderHover()
+								local mouseX = mouse.X - ImageLabel3.AbsolutePosition.X
 								local X2 = ImageLabel3.AbsoluteSize.X
-								local v532 = math.clamp(v530, 0, X2) / ImageLabel3.AbsoluteSize.X
-								local v533 = mouse.Y - ImageLabel3.AbsolutePosition.Y
+								local huePosition = math.clamp(mouseX, 0, X2) / ImageLabel3.AbsoluteSize.X
+								local mouseY = mouse.Y - ImageLabel3.AbsolutePosition.Y
 								local Y3 = ImageLabel3.AbsoluteSize.Y
-								local v535 = math.clamp(v533, 0, Y3) / ImageLabel3.AbsoluteSize.Y
+								local satPosition = math.clamp(mouseY, 0, Y3) / ImageLabel3.AbsoluteSize.Y
 
-								ImageLabel.Position = UDim2.new(v532, 0, v535, 0)
+								ImageLabel.Position = UDim2.new(huePosition, 0, satPosition, 0)
 
-								local _ = 1 - v535
+								local _ = 1 - satPosition
 
-								v516()
+								onSliderRender()
 							end
 
 							local connection
 
 							if Orion:IsRunning() then
-								connection = RenderStepped:Connect(v529)
+								connection = RenderStepped:Connect(onSliderHover)
 
 								local Connections = Orion.Connections
 
@@ -2557,7 +2557,7 @@ function Orion.MakeWindow(_, p54)
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputBegan2:Connect(v527)
+							local connection = InputBegan2:Connect(onSliderClick)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -2565,8 +2565,8 @@ function Orion.MakeWindow(_, p54)
 
 						local InputEnded = ImageLabel3.InputEnded
 
-						local function v542(p99)
-							if not (p99.UserInputType == Enum.UserInputType.MouseButton1 and ColorInput) then
+						local function onSliderInputBegan(input)
+							if not (input.UserInputType == Enum.UserInputType.MouseButton1 and ColorInput) then
 								return
 							end
 
@@ -2574,7 +2574,7 @@ function Orion.MakeWindow(_, p54)
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputEnded:Connect(v542)
+							local connection = InputEnded:Connect(onSliderInputBegan)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -2582,8 +2582,8 @@ function Orion.MakeWindow(_, p54)
 
 						local InputBegan3 = Frame.InputBegan
 
-						local function v546(p100)
-							if p100.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						local function onSliderInputChanged(input)
+							if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 								return
 							end
 
@@ -2593,22 +2593,22 @@ function Orion.MakeWindow(_, p54)
 
 							local RenderStepped = RunService.RenderStepped
 
-							local function v548()
-								local v549 = mouse.Y - Frame.AbsolutePosition.Y
+							local function onSliderInputEnded()
+								local mouseY2 = mouse.Y - Frame.AbsolutePosition.Y
 								local Y3 = Frame.AbsoluteSize.Y
-								local v551 = math.clamp(v549, 0, Y3) / Frame.AbsoluteSize.Y
+								local valPosition = math.clamp(mouseY2, 0, Y3) / Frame.AbsoluteSize.Y
 
-								ImageLabel2.Position = UDim2.new(0.5, 0, v551, 0)
+								ImageLabel2.Position = UDim2.new(0.5, 0, valPosition, 0)
 
-								local _ = 1 - v551
+								local _ = 1 - valPosition
 
-								v516()
+								onSliderRender()
 							end
 
 							local connection
 
 							if Orion:IsRunning() then
-								connection = RenderStepped:Connect(v548)
+								connection = RenderStepped:Connect(onSliderInputEnded)
 
 								local Connections = Orion.Connections
 
@@ -2621,7 +2621,7 @@ function Orion.MakeWindow(_, p54)
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputBegan3:Connect(v546)
+							local connection = InputBegan3:Connect(onSliderInputChanged)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
@@ -2629,8 +2629,8 @@ function Orion.MakeWindow(_, p54)
 
 						local InputEnded2 = Frame.InputEnded
 
-						local function v558(p101)
-							if not (p101.UserInputType == Enum.UserInputType.MouseButton1 and HueInput) then
+						local function onSliderRelease(input)
+							if not (input.UserInputType == Enum.UserInputType.MouseButton1 and HueInput) then
 								return
 							end
 
@@ -2638,47 +2638,47 @@ function Orion.MakeWindow(_, p54)
 						end
 
 						if Orion:IsRunning() then
-							local connection = InputEnded2:Connect(v558)
+							local connection = InputEnded2:Connect(onSliderRelease)
 							local Connections = Orion.Connections
 
 							table.insert(Connections, connection)
 						end
 
-						function t22.Set(_, p102)
-							t22.Value = p102
-							main2.BackgroundColor3 = t22.Value
-							v495.Callback(t22.Value)
+						function colorpickerElements.Set(_, colorValue)
+							colorpickerElements.Value = colorValue
+							main2.BackgroundColor3 = colorpickerElements.Value
+							ParagraphConfig.Callback(colorpickerElements.Value)
 						end
 
-						t22:Set(t22.Value)
+						colorpickerElements:Set(colorpickerElements.Value)
 
-						if not v495.Flag then
-							return t22
+						if not ParagraphConfig.Flag then
+							return colorpickerElements
 						end
 
-						Orion.Flags[v495.Flag] = t22
+						Orion.Flags[ParagraphConfig.Flag] = colorpickerElements
 
-						return t22
+						return colorpickerElements
 					end
 				}
 			end
 
-			local t23 = {
-				AddSection = function(_, p103)
-					p103.Name = p103.Name or "Section"
+			local sectionListProps = {
+				AddSection = function(_, sectionConfig)
+					sectionConfig.Name = sectionConfig.Name or "Section"
 
-					local v562 = SetChildren
+					local setChildrenFn5 = SetChildren
 					local TFrame = NewElement("TFrame")
-					local t24 = {
+					local notificationChildren = {
 						Size = UDim2.new(1, 0, 0, 26),
 						Parent = divider3
 					}
 
-					table.foreach(t24, function(p104, p105)
-						TFrame[p104] = p105
+					table.foreach(notificationChildren, function(key, value)
+						TFrame[key] = value
 					end)
 
-					local v565 = v562(TFrame, { AddThemeObject(SetProperties(NewElement("Label", p103.Name, 14), {
+					local section = setChildrenFn5(TFrame, { AddThemeObject(SetProperties(NewElement("Label", sectionConfig.Name, 14), {
 							Size = UDim2.new(1, -12, 0, 16),
 							Position = UDim2.new(0, 0, 0, 3),
 							Font = Enum.Font.GothamSemibold
@@ -2688,89 +2688,89 @@ function Orion.MakeWindow(_, p54)
 							Position = UDim2.new(0, 0, 0, 23),
 							Name = "Holder"
 						}), { NewElement("List", 0, 6) }) })
-					local signal3 = v565.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize")
+					local signal3 = section.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize")
 
-					local function v567()
-						v565.Size = UDim2.new(1, 0, 0, v565.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
-						v565.Holder.Size = UDim2.new(1, 0, 0, v565.Holder.UIListLayout.AbsoluteContentSize.Y)
+					local function onSectionRender()
+						section.Size = UDim2.new(1, 0, 0, section.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
+						section.Holder.Size = UDim2.new(1, 0, 0, section.Holder.UIListLayout.AbsoluteContentSize.Y)
 					end
 
-					local v568
+					local sectionValue
 
 					if not Orion:IsRunning() then
-						local v667 = next
-						local v668, v669 = v178(v565.Holder)
-						local v670 = {}
+						local nextFn = next
+						local childrenList, loopState = getChildren(section.Holder)
+						local childrenTbl = {}
 
 						while true do
-							v669, v568 = v667(v668, v669)
+							loopState, sectionValue = nextFn(childrenList, loopState)
 
-							if not v669 then
+							if not loopState then
 								break
 							end
 
-							v670[v669] = v568
+							childrenTbl[loopState] = sectionValue
 						end
 
-						return v670
+						return childrenTbl
 					end
 
-					local connection = signal3:Connect(v567)
+					local connection = signal3:Connect(onSectionRender)
 					local Connections = Orion.Connections
 
 					table.insert(Connections, connection)
 
 					local next_ = next
-					local v572, key = v178(v565.Holder)
-					local t25 = {}
+					local getSectionChildren, key = getChildren(section.Holder)
+					local newConfigData = {}
 
 					while true do
-						key, v568 = next_(v572, key)
+						key, sectionValue = next_(getSectionChildren, key)
 
 						if not key then
 							break
 						end
 
-						t25[key] = v568
+						newConfigData[key] = sectionValue
 					end
 
-					return t25
+					return newConfigData
 				end
 			}
 			local next_ = next
-			local v576, key = v178(divider3)
+			local serializeConfig, key = getChildren(divider3)
 
 			while true do
-				local v578
+				local tabValue
 
-				key, v578 = next_(v576, key)
+				key, tabValue = next_(serializeConfig, key)
 
 				if not key then
 					break
 				end
 
-				t23[key] = v578
+				sectionListProps[key] = tabValue
 			end
 
-			local v579
+			local setConfigValue
 
-			if v153.PremiumOnly then
+			if TabConfig.PremiumOnly then
 				local next_2 = next
 
-				v579 = t23
+				setConfigValue = sectionListProps
 
 				local key2 = nil
 
 				while true do
-					local v582
+					local notifItemValue
 
-					key2, v582 = next_2(t23, key2)
+					key2, notifItemValue = next_2(sectionListProps, key2)
 
 					if not key2 then
 						break
 					end
 
-					v579[key2] = function() end
+					setConfigValue[key2] = function() end
 				end
 
 				divider3:FindFirstChild("UIListLayout"):Destroy()
@@ -2806,10 +2806,10 @@ function Orion.MakeWindow(_, p54)
 					}), "Text")
 				})
 			else
-				v579 = t23
+				setConfigValue = sectionListProps
 			end
 
-			return v579
+			return setConfigValue
 		end
 	}
 end
