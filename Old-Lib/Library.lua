@@ -14,12 +14,12 @@ local Orion = {
 	Flags = {},
 	Themes = {
 		Default = {
-			Main = Color3.fromRGB(985, 25, 205),
-			Second = Color3.fromRGB(362, 392, 3),
-			Stroke = Color3.fromRGB(610, 6, 628),
-			Divider = Color3.fromRGB(6, 680, 846),
-			Text = Color3.fromRGB(290, 220, 280),
-			TextDark = Color3.fromRGB(50, 150, 10)
+			Main = Color3.fromRGB(26, 16, 36),
+			Second = Color3.fromRGB(38, 25, 54),
+			Stroke = Color3.fromRGB(96, 62, 138),
+			Divider = Color3.fromRGB(58, 40, 80),
+			Text = Color3.fromRGB(255, 255, 255),
+			TextDark = Color3.fromRGB(198, 188, 214)
 		}
 	},
 	SelectedTheme = "Default",
@@ -51,6 +51,27 @@ if syn then
 else
 	ScreenGui.Parent = gethui() or game.CoreGui
 end
+
+-- 窗口恢复按钮（隐藏后点击放大窗口）
+local RestoreIcon = Instance.new("ImageButton")
+RestoreIcon.Name = "RestoreIcon"
+RestoreIcon.Size = UDim2.new(0, 46, 0, 46)
+RestoreIcon.Position = UDim2.new(0, 12, 0, 12)
+RestoreIcon.BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Second
+RestoreIcon.Visible = false
+RestoreIcon.ZIndex = 50
+RestoreIcon.Parent = ScreenGui
+local RestoreCorner = Instance.new("UICorner")
+RestoreCorner.CornerRadius = UDim.new(1, 0)
+RestoreCorner.Parent = RestoreIcon
+local RestoreImage = Instance.new("Image")
+RestoreImage.Image = "rbxassetid://8834748103"
+RestoreImage.Size = UDim2.new(0, 26, 0, 26)
+RestoreImage.Position = UDim2.new(0.5, -13, 0.5, -13)
+RestoreImage.BackgroundTransparency = 1
+RestoreImage.ZIndex = 51
+RestoreImage.Parent = RestoreIcon
+AddThemeObject(RestoreIcon, "Second")
 
 if gethui then
 	for _, child in ipairs(gethui():GetChildren()) do
@@ -620,7 +641,6 @@ function Orion.Init(_)
 	end)
 end
 function Orion.MakeWindow(_, p54)
-	local u96 = false
 	local v97 = p54 or {}
 
 	v97.Name = v97.Name or "Orion Library"
@@ -798,7 +818,7 @@ function Orion.MakeWindow(_, p54)
 
 	local function v127()
 		main.Visible = false
-		u96 = true
+		RestoreIcon.Visible = true
 		Orion:MakeNotification({
 			Name = "XK脚本中心",
 			Content = "再见“朋友”有机会回来看啊",
@@ -816,21 +836,22 @@ function Orion.MakeWindow(_, p54)
 
 	local InputBegan = UserInputService.InputBegan
 
-	local function v131(p55)
-		local v132
-
-		if p55.KeyCode == Enum.KeyCode.RightShift then
-			v132 = u96
-		else
-			v132 = false
+	local function v131(p55, processed)
+		if p55.KeyCode == Enum.KeyCode.RightShift and not processed then
+			if main.Visible then
+				main.Visible = false
+				RestoreIcon.Visible = true
+			else
+				main.Visible = true
+				RestoreIcon.Visible = false
+			end
 		end
-
-		if not v132 then
-			return
-		end
-
-		main.Visible = true
 	end
+
+	RestoreIcon.MouseButton1Click:Connect(function()
+		main.Visible = true
+		RestoreIcon.Visible = false
+	end)
 
 	if Orion:IsRunning() then
 		local connection = InputBegan:Connect(v131)
