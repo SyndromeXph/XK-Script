@@ -848,9 +848,20 @@ function Orion.MakeWindow(_, windowConfig)
 		end
 	end
 
-	RestoreIcon.MouseButton1Click:Connect(function()
+	local function restoreWindow()
 		main.Visible = true
 		RestoreIcon.Visible = false
+	end
+
+	RestoreIcon.Active = true
+	RestoreIcon.Selectable = false
+	RestoreIcon.AutoButtonColor = true
+	RestoreIcon.Activated:Connect(restoreWindow)
+	RestoreIcon.MouseButton1Click:Connect(restoreWindow)
+	RestoreIcon.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+			restoreWindow()
+		end
 	end)
 
 	if Orion:IsRunning() then
