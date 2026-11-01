@@ -414,6 +414,25 @@ RegisterElement("Frame", function(parent)
 		BorderSizePixel = 0
 	})
 end)
+RegisterElement("Toggle", function(title, parent)
+	local toggleLabel = SetProperties(SetChildren(NewElement("Label", title), {
+		AddThemeObject(SetProperties(NewElement("RoundFrame", ""), {
+			Size = UDim2.new(1, 0, 1, 0),
+			Position = UDim2.new(0, 0, 0, 0),
+			Name = "Frame"
+		}), "Second")
+	}), {
+		Parent = parent,
+		Size = UDim2.new(1, 0, 1, 0),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Font = Enum.Font.GothamBold,
+		TextSize = 12,
+		TextTransparency = 0.3
+	})
+
+	return toggleLabel
+end, true)
+
 RegisterElement("RoundFrame", function(parent, cornerScale, cornerOffset)
 	return CreateInstance("Frame", {
 		BackgroundColor3 = parent or Color3.fromRGB(255, 255, 255),
@@ -836,7 +855,49 @@ function Orion.MakeWindow(_, windowConfig)
 
 	local InputBegan = UserInputService.InputBegan
 
-	local function toggleWindow(key, processed)
+						-- 最小化按钮（− 号收缩为标题栏，再点展开）
+					local MinimizeBtn = AddThemeObject(SetChildren(SetProperties(NewElement("ImageButton", WindowConfig.Icon), {
+						Size = UDim2.new(0, 14, 0, 14),
+						Position = UDim2.new(1, -34, 0, 8),
+						BackgroundTransparency = 1,
+						Image = "rbxassetid://9886659276",
+						Parent = main,
+						Name = "Minimize"
+					}), {
+						AddThemeObject(SetProperties(NewElement("ImageLabel", "rbxassetid://9886659675"), {
+							AnchorPoint = Vector2.new(0.5, 0.5),
+							Size = UDim2.new(1, 0, 1, 0),
+							Position = UDim2.new(0.5, 0, 0.5, 0),
+							Name = "Ico"
+						}), "Text")
+					}), "Text")
+
+					local isMinimized = false
+					local upSize = {
+						Size = UDim2.new(0, WindowConfig.Size.X.Offset, 0, WindowConfig.Size.Y.Offset)
+					}
+					local downSize = {
+						Size = UDim2.new(0, WindowConfig.Size.X.Offset, 0, 42)
+					}
+
+					MinimizeBtn.MouseButton1Click:Connect(function()
+						if isMinimized then
+							MinimizeBtn.Ico.Image = "rbxassetid://9886659675"
+							tweenService:Create(text, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								TextTransparency = 0
+							}):Play()
+							tweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), upSize):Play()
+						else
+							MinimizeBtn.Ico.Image = "rbxassetid://9886659406"
+							tweenService:Create(text, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								TextTransparency = 1
+							}):Play()
+							tweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), downSize):Play()
+						end
+						isMinimized = not isMinimized
+					end)
+
+					local function toggleWindow(key, processed)
 		if key.KeyCode == Enum.KeyCode.RightShift and not processed then
 			if main.Visible then
 				main.Visible = false
@@ -1332,199 +1393,181 @@ function Orion.MakeWindow(_, windowConfig)
 
 						return toggleChildren
 					end,
-					AddToggle = function(_, colorpickerConfig)
-						local ColorpickerConfig = colorpickerConfig or {}
+					AddToggle = function(_, toggleConfig)
+					local ToggleConfig = toggleConfig or {}
+					ToggleConfig.Name = ToggleConfig.Name or "Toggle"
 
-						ColorpickerConfig.Name = ColorpickerConfig.Name or "Toggle"
-						ColorpickerConfig.Default = ColorpickerConfig.Default or false
-						ColorpickerConfig.Callback = ColorpickerConfig.Callback or function() end
-						ColorpickerConfig.Color = ColorpickerConfig.Color or Color3.fromRGB(9, 99, 195)
-						ColorpickerConfig.Flag = ColorpickerConfig.Flag or nil
-						ColorpickerConfig.Save = ColorpickerConfig.Save or false
+					local toggleChildren = {
+						Value = ToggleConfig.Default or false,
+						Callback = ToggleConfig.Callback or function()
+						end,
+						Type = "Toggle",
+						Flag = ToggleConfig.Flag,
+						Save = ToggleConfig.Save
+					}
 
-						local colorpickerChildren = {
-							Value = ColorpickerConfig.Default,
-							Save = ColorpickerConfig.Save
-						}
-						local colorButton = SetProperties(NewElement("Button"), {
-							Size = UDim2.new(1, 0, 1, 0)
-						})
-						local colorFrame = SetChildren(SetProperties(NewElement("RoundFrame", ColorpickerConfig.Color, 0, 4), {
-							Size = UDim2.new(0, 24, 0, 24),
-							Position = UDim2.new(1, -24, 0.5, 0),
-							AnchorPoint = Vector2.new(0.5, 0.5)
-						}), { SetProperties(NewElement("Stroke"), {
-								Color = ColorpickerConfig.Color,
-								Name = "Stroke",
-								Transparency = 0.5
-							}), SetProperties(NewElement("Image", "rbxassetid://3944680095"), {
-								Size = UDim2.new(0, 20, 0, 20),
-								AnchorPoint = Vector2.new(0.5, 0.5),
-								Position = UDim2.new(0.5, 0, 0.5, 0),
-								ImageColor3 = Color3.fromRGB(255, 255, 255),
-								Name = "Ico"
-							}) })
-						local second4 = AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-							Size = UDim2.new(1, 0, 0, 38),
-							Parent = childElement
+					local toggleButton = AddThemeObject(SetChildren(SetProperties(NewElement("Toggle", ToggleConfig.Name), {
+						Parent = Container,
+						Size = UDim2.new(1, 0, 0, 38)
+					}), {
+						AddThemeObject(SetProperties(NewElement("Label", ToggleConfig.Name), {
+							Size = UDim2.new(1, -40, 1, 0),
+							Position = UDim2.new(0, 10, 0, 0),
+							Font = Enum.Font.GothamBold,
+							TextSize = 12,
+							TextTransparency = 0.30000001192092896,
+							TextXAlignment = Enum.TextXAlignment.Left
+						}), "Text"),
+						AddThemeObject(SetChildren(SetProperties(NewElement("RoundFrame", ""), {
+							AnchorPoint = Vector2.new(1, 0.5),
+							Size = UDim2.new(0, 30, 0, 30),
+							Position = UDim2.new(1, -10, 0.5, 0)
 						}), {
-							AddThemeObject(SetProperties(NewElement("Label", ColorpickerConfig.Name, 15), {
-								Size = UDim2.new(1, -12, 1, 0),
-								Position = UDim2.new(0, 12, 0, 0),
-								Font = Enum.Font.GothamBold,
-								Name = "Content"
-							}), "Text"),
 							AddThemeObject(NewElement("Stroke"), "Stroke"),
-							colorFrame,
-							colorButton
-						}), "Second")
+							AddThemeObject(SetChildren(SetProperties(NewElement("Frame", ""), {
+								AnchorPoint = Vector2.new(0.5, 0.5),
+								Size = UDim2.new(0, 22, 0, 22),
+								Position = UDim2.new(0.5, 0, 0.5, 0)
+							}), {
+								AddThemeObject(SetProperties(NewElement("Frame", ""), {
+									AnchorPoint = Vector2.new(0.5, 0.5),
+									Size = UDim2.new(0, 16, 0, 16),
+									Position = UDim2.new(0.5, 0, 0.5, 0)
+								}), "Second")
+							}), "TextDark")
+						}), "Text")
+					}), "Second")
 
-						function colorpickerChildren.Set(_, colorpickerValue)
-							colorpickerChildren.Value = colorpickerValue
+					local toggleValue = AddThemeObject(SetChildren(SetProperties(NewElement("Frame", "Value"), {
+						Parent = toggleButton,
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Size = UDim2.new(0, 24, 0, 24),
+						Position = UDim2.new(0.5, 0, 0.5, 0),
+						BackgroundTransparency = 1
+					}), {
+						AddThemeObject(SetProperties(NewElement("Label", ""), {
+							AnchorPoint = Vector2.new(0.5, 0.5),
+							Size = UDim2.new(1, 0, 1, 0),
+							Position = UDim2.new(0.5, 0, 0.5, 0),
+							Text = "",
+							Font = Enum.Font.GothamBold,
+							TextSize = 12,
+							TextXAlignment = Enum.TextXAlignment.Center,
+							TextYAlignment = Enum.TextYAlignment.Center,
+							TextTransparency = 1
+						}), "Text")
+					}), "Text")
 
-							local tweenService = TweenService
-							local colorFrameRef = colorFrame
-							local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local Value_ = colorpickerChildren.Value
+					local toggleIco = AddThemeObject(SetProperties(NewElement("Frame", "Ico"), {
+						Parent = toggleButton,
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Size = UDim2.new(0, 24, 0, 24),
+						Position = UDim2.new(0.5, 0, 0.5, 0),
+						BackgroundTransparency = 1,
+						Visible = false
+					}), "Text")
 
-							if Value_ then
-								Value_ = ColorpickerConfig.Color
-							end
+					AddThemeObject(SetProperties(NewElement("ImageLabel", ""), {
+						Parent = toggleIco,
+						Size = UDim2.new(0, 20, 0, 20),
+						Position = UDim2.new(0.5, 0, 0.5, 0),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Image = "rbxassetid://3944680095",
+						BackgroundTransparency = 1
+					}), "Text")
 
-							tweenService:Create(colorFrameRef, tweenInfo, {
-								BackgroundColor3 = Value_ or Orion.Themes.Default.Divider
-							}):Play()
-
-							local tweenService = TweenService
-							local Stroke = colorFrame.Stroke
-							local tweenInfo2 = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local Value_2 = colorpickerChildren.Value
-
-							if Value_2 then
-								Value_2 = ColorpickerConfig.Color
-							end
-
-							tweenService:Create(Stroke, tweenInfo2, {
-								Color = Value_2 or Orion.Themes.Default.Stroke
-							}):Play()
-
-							local tweenService = TweenService
-							local Ico = colorFrame.Ico
-							local tweenInfo3 = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local strokeTrans = colorpickerChildren.Value and 0 or 1
-							local Value_3 = colorpickerChildren.Value
-
-							if not Value_3 then
-								tweenService:Create(Ico, tweenInfo3, {
-									ImageTransparency = strokeTrans,
-									Size = Value_3 or UDim2.new(0, 8, 0, 8)
-								}):Play()
-								ColorpickerConfig.Callback(colorpickerChildren.Value)
-
-								return
-							end
-
-							Value_3 = UDim2.new(0, 20, 0, 20)
-							tweenService:Create(Ico, tweenInfo3, {
-								ImageTransparency = strokeTrans,
-								Size = Value_3 or UDim2.new(0, 8, 0, 8)
-							}):Play()
-							ColorpickerConfig.Callback(colorpickerChildren.Value)
+					function toggleChildren.Set(self, newValue)
+						if newValue ~= nil then
+							toggleChildren.Value = newValue
 						end
 
-						colorpickerChildren:Set(colorpickerChildren.Value)
-
-						local MouseEnter = colorButton.MouseEnter
-
-						local function onColorRender()
-							local tweenService = TweenService
-							local tweenService2 = second4
-							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local color3 = Color3.fromRGB
-							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-
-							tweenService.Create(tweenService, tweenService2, tweenInfo, {
-								BackgroundColor3 = color3(secondRed, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+						if toggleChildren.Value then
+							TweenService:Create(toggleValue, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								Size = UDim2.new(0, 24, 0, 24),
+								BackgroundTransparency = 0
 							}):Play()
-						end
-
-						if Orion:IsRunning() then
-							local connection = MouseEnter:Connect(onColorRender)
-							local Connections = Orion.Connections
-
-							table.insert(Connections, connection)
-						end
-
-						local MouseLeave = colorButton.MouseLeave
-
-						local function onColorClick()
-							TweenService:Create(second4, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-								BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Second
+							TweenService:Create(toggleIco, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								Position = UDim2.new(0.5, 0, 0.5, 0),
+								Size = UDim2.new(0, 20, 0, 20),
+								ImageTransparency = 0
+							}):Play()
+						else
+							TweenService:Create(toggleValue, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								Size = UDim2.new(0, 0, 0, 0),
+								BackgroundTransparency = 1
+							}):Play()
+							TweenService:Create(toggleIco, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								Position = UDim2.new(0.5, 0, 0.5, 0),
+								Size = UDim2.new(0, 0, 0, 0),
+								ImageTransparency = 1
 							}):Play()
 						end
 
-						if Orion:IsRunning() then
-							local connection = MouseLeave:Connect(onColorClick)
-							local Connections = Orion.Connections
+						toggleChildren.Callback(toggleChildren.Value)
+					end
 
-							table.insert(Connections, connection)
-						end
+					function toggleChildren.SetColor()
+						toggleValue.BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Text
+						toggleIco.ImageColor3 = Orion.Themes[Orion.SelectedTheme].Second
+					end
 
-						local MouseButton1Up3 = colorButton.MouseButton1Up
+					toggleChildren:Set()
 
-						local function onColorHover()
-							local tweenService = TweenService
-							local tweenService2 = second4
-							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local color3 = Color3.fromRGB
-							local secondRed = Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3
-							local secondGreen = Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3
-							local orionRef3 = Orion
+					local MouseEnter = toggleButton.MouseEnter
+					local function onToggleRender()
+						TweenService:Create(toggleButton.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+							BackgroundColor3 = Color3.fromRGB(Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 3, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
+						}):Play()
+					end
+					if Orion:IsRunning() then
+						local connection = MouseEnter:Connect(onToggleRender)
+						table.insert(Orion.Connections, connection)
+					end
 
-							tweenService.Create(tweenService, tweenService2, tweenInfo, {
-								BackgroundColor3 = color3(secondRed, secondGreen, orionRef3.Themes[Orion.SelectedTheme].Second.B * 255 + 3)
-							}):Play()
-							SaveConfig(game.GameId)
-							colorpickerChildren:Set(not colorpickerChildren.Value)
-						end
+					local MouseLeave = toggleButton.MouseLeave
+					local function onToggleLeave()
+						TweenService:Create(toggleButton.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+							BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Second
+						}):Play()
+					end
+					if Orion:IsRunning() then
+						local connection = MouseLeave:Connect(onToggleLeave)
+						table.insert(Orion.Connections, connection)
+					end
 
-						if Orion:IsRunning() then
-							local connection = MouseButton1Up3:Connect(onColorHover)
-							local Connections = Orion.Connections
+					local MouseButton1Up = toggleButton.MouseButton1Up
+					local function onToggleClick()
+						TweenService:Create(toggleButton.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+							BackgroundColor3 = Color3.fromRGB(Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
+						}):Play()
+						SaveConfig(game.GameId)
+						toggleChildren:Set(not toggleChildren.Value)
+					end
+					if Orion:IsRunning() then
+						local connection = MouseButton1Up:Connect(onToggleClick)
+						table.insert(Orion.Connections, connection)
+					end
 
-							table.insert(Connections, connection)
-						end
+					local MouseButton1Down = toggleButton.MouseButton1Down
+					local function onToggleDown()
+						TweenService:Create(toggleButton.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+							BackgroundColor3 = Color3.fromRGB(Orion.Themes[Orion.SelectedTheme].Second.R * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
+						}):Play()
+					end
+					if Orion:IsRunning() then
+						local connection = MouseButton1Down:Connect(onToggleDown)
+						table.insert(Orion.Connections, connection)
+					end
 
-						local MouseButton1Down = colorButton.MouseButton1Down
+					if not ToggleConfig.Flag then
+						return toggleChildren
+					end
 
-						local function onColorChanged()
-							local tweenService = TweenService
-							local tweenService2 = second4
-							local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-							local color3 = Color3.fromRGB
-							local Second = Orion.Themes[Orion.SelectedTheme].Second
+					Orion.Flags[ToggleConfig.Flag] = toggleChildren
 
-							tweenService.Create(tweenService, tweenService2, tweenInfo, {
-								BackgroundColor3 = color3(Second.R * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.G * 255 + 6, Orion.Themes[Orion.SelectedTheme].Second.B * 255 + 6)
-							}):Play()
-						end
-
-						if Orion:IsRunning() then
-							local connection = MouseButton1Down:Connect(onColorChanged)
-							local Connections = Orion.Connections
-
-							table.insert(Connections, connection)
-						end
-
-						if not ColorpickerConfig.Flag then
-							return colorpickerChildren
-						end
-
-						Orion.Flags[ColorpickerConfig.Flag] = colorpickerChildren
-
-						return colorpickerChildren
-					end,
-					AddSlider = function(_, sliderConfig)
+					return toggleChildren
+				end,
+				AddSlider = function(_, sliderConfig)
 						local SliderConfig = sliderConfig or {}
 
 						SliderConfig.Name = SliderConfig.Name or "Slider"
