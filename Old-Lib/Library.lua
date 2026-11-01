@@ -28,7 +28,7 @@ local Orion = {
 }
 local icons = nil
 
-local function LoadIconsFn()
+local function loadIconsFn()
 	icons = HttpService:JSONDecode(game:HttpGetAsync("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")).icons
 end
 
@@ -51,27 +51,6 @@ if syn then
 else
 	ScreenGui.Parent = gethui() or game.CoreGui
 end
-
--- 窗口恢复按钮（隐藏后点击放大窗口）
-local RestoreIcon = Instance.new("ImageButton")
-RestoreIcon.Name = "RestoreIcon"
-RestoreIcon.Size = UDim2.new(0, 46, 0, 46)
-RestoreIcon.Position = UDim2.new(0, 12, 0, 12)
-RestoreIcon.BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Second
-RestoreIcon.Visible = false
-RestoreIcon.ZIndex = 50
-RestoreIcon.Parent = ScreenGui
-local RestoreCorner = Instance.new("UICorner")
-RestoreCorner.CornerRadius = UDim.new(1, 0)
-RestoreCorner.Parent = RestoreIcon
-local RestoreImage = Instance.new("ImageLabel")
-RestoreImage.Image = "rbxassetid://8834748103"
-RestoreImage.Size = UDim2.new(0, 26, 0, 26)
-RestoreImage.Position = UDim2.new(0.5, -13, 0.5, -13)
-RestoreImage.BackgroundTransparency = 1
-RestoreImage.ZIndex = 51
-RestoreImage.Parent = RestoreIcon
-AddThemeObject(RestoreIcon, "Second")
 
 if gethui then
 	for _, child in ipairs(gethui():GetChildren()) do
@@ -640,6 +619,27 @@ function Orion.Init(_)
 		})
 	end)
 end
+-- 窗口恢复按钮（隐藏后点击放大窗口）
+local RestoreIcon = Instance.new("ImageButton")
+RestoreIcon.Name = "RestoreIcon"
+RestoreIcon.Size = UDim2.new(0, 46, 0, 46)
+RestoreIcon.Position = UDim2.new(0, 12, 0, 12)
+RestoreIcon.BackgroundColor3 = Orion.Themes[Orion.SelectedTheme].Second
+RestoreIcon.Visible = false
+RestoreIcon.ZIndex = 50
+RestoreIcon.Parent = ScreenGui
+local RestoreCorner = Instance.new("UICorner")
+RestoreCorner.CornerRadius = UDim.new(1, 0)
+RestoreCorner.Parent = RestoreIcon
+local RestoreImage = Instance.new("ImageLabel")
+RestoreImage.Image = "rbxassetid://8834748103"
+RestoreImage.Size = UDim2.new(0, 26, 0, 26)
+RestoreImage.Position = UDim2.new(0.5, -13, 0.5, -13)
+RestoreImage.BackgroundTransparency = 1
+RestoreImage.ZIndex = 51
+RestoreImage.Parent = RestoreIcon
+AddThemeObject(RestoreIcon, "Second")
+
 function Orion.MakeWindow(_, windowConfig)
 	local WindowConfig = windowConfig or {}
 
