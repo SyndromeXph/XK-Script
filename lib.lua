@@ -676,7 +676,7 @@ function OrionLib:MakeWindow(WindowConfig)
 		UIHidden = true
 		OrionLib:MakeNotification({
 			Name = "界面隐藏",
-			Content = "点击右Shift键重新打开界面，伙计下次再见 XK HUB"",
+			Content = "点击右Shift键重新打开界面，伙计下次再见 XK HUB",
 			Time = 5
 		})
 		WindowConfig.CloseCallback()
