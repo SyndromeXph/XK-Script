@@ -50,7 +50,7 @@ function LuannyUi:Notify(options)
     local titleText = options.Title or "Notification"
     local descText = options.Desc or ""
     local duration = options.Duration or 5
-    local noticeColor = options.Color or Color3.fromRGB(160, 90, 255)
+    local noticeColor = options.Color or Color3.fromRGB(255, 255, 255)
     local iconName = options.Icon
     local buttons = options.Buttons or {}
     local hasButtons = #buttons > 0
@@ -64,12 +64,12 @@ function LuannyUi:Notify(options)
     local card = Instance.new("CanvasGroup", wrapper)
     card.Size = UDim2.new(1, 0, 1, 0)
     card.Position = UDim2.new(0, 50, 0, 0)
-    card.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+    card.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     card.GroupTransparency = 1
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    
+
     local stroke = Instance.new("UIStroke", card)
-    stroke.Color = Color3.fromRGB(80, 40, 120)
+    stroke.Color = Color3.fromRGB(70, 70, 70)
     stroke.Thickness = 1
 
     local textRightOffset = 12
@@ -89,7 +89,7 @@ function LuannyUi:Notify(options)
     lblTitle.Position = UDim2.new(0, 12, 0, 12)
     lblTitle.BackgroundTransparency = 1
     lblTitle.Text = titleText
-    lblTitle.TextColor3 = Color3.fromRGB(220, 200, 255)
+    lblTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     lblTitle.FontFace = FontTitle
     lblTitle.TextSize = 13
     lblTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -99,7 +99,7 @@ function LuannyUi:Notify(options)
     lblDesc.Position = UDim2.new(0, 12, 0, 30)
     lblDesc.BackgroundTransparency = 1
     lblDesc.Text = descText
-    lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190)
+    lblDesc.TextColor3 = Color3.fromRGB(170, 170, 170)
     lblDesc.FontFace = FontUI
     lblDesc.TextSize = 12
     lblDesc.TextWrapped = true
@@ -109,12 +109,12 @@ function LuannyUi:Notify(options)
     local progressBg = Instance.new("Frame", card)
     progressBg.Size = UDim2.new(1, 0, 0, 2)
     progressBg.Position = UDim2.new(0, 0, 1, -2)
-    progressBg.BackgroundColor3 = Color3.fromRGB(40, 30, 50)
+    progressBg.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     progressBg.BorderSizePixel = 0
 
     local progressBar = Instance.new("Frame", progressBg)
     progressBar.Size = UDim2.new(1, 0, 1, 0)
-    progressBar.BackgroundColor3 = noticeColor or Color3.fromRGB(160, 90, 255)
+    progressBar.BackgroundColor3 = noticeColor or Color3.fromRGB(255, 255, 255)
     progressBar.BorderSizePixel = 0
 
     local isClosed = false
@@ -133,36 +133,36 @@ function LuannyUi:Notify(options)
 
     if hasButtons then
         lblDesc.Size = UDim2.new(1, -24, 0, 20)
-        
+
         local btnContainer = Instance.new("Frame", card)
         btnContainer.Size = UDim2.new(1, -24, 0, 28)
         btnContainer.Position = UDim2.new(0, 12, 0, 58)
         btnContainer.BackgroundTransparency = 1
-        
+
         local btnLayout = Instance.new("UIListLayout", btnContainer)
         btnLayout.FillDirection = Enum.FillDirection.Horizontal
         btnLayout.SortOrder = Enum.SortOrder.LayoutOrder
         btnLayout.Padding = UDim.new(0, 6)
-        
+
         for _, btnData in ipairs(buttons) do
             local btn = Instance.new("TextButton", btnContainer)
             btn.Size = UDim2.new(1 / #buttons, -((6 * (#buttons - 1)) / #buttons), 1, 0)
-            btn.BackgroundColor3 = Color3.fromRGB(45, 35, 55)
+            btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
             btn.Text = btnData.Title or "Button"
-            btn.TextColor3 = Color3.fromRGB(220, 200, 255)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
             btn.FontFace = FontUI
             btn.TextSize = 12
             btn.AutoButtonColor = false
             Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
-            
+
             local btnStroke = Instance.new("UIStroke", btn)
-            btnStroke.Color = Color3.fromRGB(80, 50, 110)
-            
+            btnStroke.Color = Color3.fromRGB(75, 75, 75)
+
             btn.MouseEnter:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 45, 75)}):Play()
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(55, 55, 55)}):Play()
             end)
             btn.MouseLeave:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 35, 55)}):Play()
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
             end)
 
             btn.MouseButton1Click:Connect(function()
@@ -219,7 +219,7 @@ end
 local function CreateLockOverlay(parent)
     local lock = Instance.new("Frame", parent)
     lock.Size = UDim2.new(1, 0, 1, 0)
-    lock.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+    lock.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     lock.BackgroundTransparency = 1
     lock.ZIndex = 20
     lock.Visible = false
@@ -251,7 +251,7 @@ end
 
 local function ToggleWindow(target, windowHeight)
     local innerFrame = target:FindFirstChildOfClass("CanvasGroup")
-    
+
     if CurrentWindow == target then
         TweenService:Create(Overlay, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
         if innerFrame then
@@ -300,8 +300,8 @@ function LuannyUi:CreateWindow(config)
 
     if CoreGui:FindFirstChild("LuannyUI") then CoreGui.LuannyUI:Destroy() end
 
-    local bgColor = WindowConfig.Theme == "Light" and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(12, 10, 16)
-    local strokeColor = WindowConfig.Theme == "Light" and Color3.fromRGB(100, 60, 140) or Color3.fromRGB(60, 35, 90)
+    local bgColor = WindowConfig.Theme == "Light" and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(8, 8, 8)
+    local strokeColor = WindowConfig.Theme == "Light" and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(55, 55, 55)
     local bgAlpha = WindowConfig.Transparent and 0.25 or 0
 
     ScreenGui = Instance.new("ScreenGui")
@@ -335,7 +335,7 @@ function LuannyUi:CreateWindow(config)
     MainContent.ClipsDescendants = true
     MainContent.ZIndex = 6
     Instance.new("UICorner", MainContent).CornerRadius = UDim.new(0, 12)
-    
+
     local layoutMain = Instance.new("UIListLayout", MainContent)
     layoutMain.FillDirection = Enum.FillDirection.Horizontal
     layoutMain.HorizontalAlignment = Enum.HorizontalAlignment.Left
@@ -376,7 +376,7 @@ function LuannyUi:CreateWindow(config)
     LblTitle.Size = UDim2.new(1, 0, 0, 16)
     LblTitle.BackgroundTransparency = 1
     LblTitle.Text = WindowConfig.Title
-    LblTitle.TextColor3 = Color3.fromRGB(200, 180, 230)
+    LblTitle.TextColor3 = Color3.fromRGB(230, 230, 230)
     LblTitle.FontFace = FontUI
     LblTitle.TextSize = 15
     LblTitle.TextXAlignment = Enum.TextXAlignment.Right
@@ -387,7 +387,7 @@ function LuannyUi:CreateWindow(config)
     LblAuthor.Size = UDim2.new(1, 0, 0, 12)
     LblAuthor.BackgroundTransparency = 1
     LblAuthor.Text = WindowConfig.Author
-    LblAuthor.TextColor3 = Color3.fromRGB(160, 140, 190)
+    LblAuthor.TextColor3 = Color3.fromRGB(150, 150, 150)
     LblAuthor.FontFace = FontUI
     LblAuthor.TextSize = 11
     LblAuthor.TextXAlignment = Enum.TextXAlignment.Right
@@ -400,7 +400,7 @@ function LuannyUi:CreateWindow(config)
     ExpandBtn.Position = UDim2.new(1, 6, 0.5, 0)
     ExpandBtn.BackgroundTransparency = 1
     ExpandBtn.Image = Icons["chevron-right"] or ""
-    ExpandBtn.ImageColor3 = Color3.fromRGB(200, 180, 230)
+    ExpandBtn.ImageColor3 = Color3.fromRGB(220, 220, 220)
     ExpandBtn.ZIndex = 6
     ExpandBtn.MouseButton1Click:Connect(function()
         IsExpanded = not IsExpanded
@@ -414,7 +414,7 @@ function LuannyUi:CreateWindow(config)
     BtnToggleBar.Position = UDim2.new(0.5, 0, 0, -6)
     BtnToggleBar.BackgroundTransparency = 1
     BtnToggleBar.Image = Icons["chevron-down"] or ""
-    BtnToggleBar.ImageColor3 = Color3.fromRGB(200, 180, 230)
+    BtnToggleBar.ImageColor3 = Color3.fromRGB(220, 220, 220)
     BtnToggleBar.ZIndex = 6
 
     IsBarVisible = WindowConfig.ShowWindow
@@ -444,26 +444,26 @@ function LuannyUi:Tab(options)
     local titleName = options.Title or "Tab"
     local iconName = options.Icon or "layout-grid"
     local windowHeight = options.Height or 350 
-    local tabColor = options.Color or Color3.fromRGB(160, 90, 255)
-    
-    local winBgColor = WindowConfig.Theme == "Light" and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(14, 12, 18)
-    local winStrokeColor = WindowConfig.Theme == "Light" and Color3.fromRGB(100, 60, 140) or Color3.fromRGB(60, 35, 90)
+    local tabColor = options.Color or Color3.fromRGB(255, 255, 255)
+
+    local winBgColor = WindowConfig.Theme == "Light" and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(12, 12, 12)
+    local winStrokeColor = WindowConfig.Theme == "Light" and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(55, 55, 55)
 
     local btn = Instance.new("TextButton", DockContainer)
     btn.Size = UDim2.new(0, 32, 0, 32); btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255); btn.Text = ""; btn.LayoutOrder = LayoutOrderCount; btn.ZIndex = 8
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    
+
     local grad = Instance.new("UIGradient", btn)
     grad.Rotation = 45
-    
+
     if typeof(tabColor) == "ColorSequence" then
         grad.Color = tabColor
     else
-        local c = typeof(tabColor) == "Color3" and tabColor or Color3.fromRGB(160, 90, 255)
-        local darker = Color3.new(c.R * 0.2, c.G * 0.15, c.B * 0.3)
+        local c = typeof(tabColor) == "Color3" and tabColor or Color3.fromRGB(255, 255, 255)
+        local darker = Color3.new(c.R * 0.25, c.G * 0.25, c.B * 0.25)
         grad.Color = ColorSequence.new(darker, c)
     end
-    
+
     local ic = Instance.new("ImageLabel", btn)
     ic.Size = UDim2.new(0, 18, 0, 18); ic.AnchorPoint = Vector2.new(0.5, 0.5); ic.Position = UDim2.new(0.5, 0, 0.5, 0); ic.BackgroundTransparency = 1; ic.Image = Icons[iconName] or ""; ic.ImageColor3 = Color3.fromRGB(255,255,255); ic.ZIndex = 9
 
@@ -476,7 +476,7 @@ function LuannyUi:Tab(options)
     maskFrame.Visible = false
     maskFrame.ZIndex = 10
     maskFrame:SetAttribute("Height", windowHeight)
-    
+
     local frame = Instance.new("CanvasGroup", maskFrame)
     frame.AnchorPoint = Vector2.new(0.5, 1)
     frame.Position = UDim2.new(0.5, 0, 1, 0)
@@ -487,9 +487,9 @@ function LuannyUi:Tab(options)
     frame.ZIndex = 10
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
     Instance.new("UIStroke", frame).Color = winStrokeColor
-    
+
     local tl = Instance.new("TextLabel", frame)
-    tl.Size = UDim2.new(1, 0, 0, 45); tl.BackgroundTransparency = 1; tl.Text = titleName; tl.TextColor3 = Color3.fromRGB(200, 180, 230); tl.FontFace = FontUI; tl.TextSize = 22; tl.ZIndex = 11
+    tl.Size = UDim2.new(1, 0, 0, 45); tl.BackgroundTransparency = 1; tl.Text = titleName; tl.TextColor3 = Color3.fromRGB(230, 230, 230); tl.FontFace = FontUI; tl.TextSize = 22; tl.ZIndex = 11
     RegisterText(tl)
 
     local container = Instance.new("ScrollingFrame", frame)
@@ -521,27 +521,27 @@ end
 function TabClass:Section(options)
     self.ItemCount = self.ItemCount + 1
     local titleText = options.Title or "Section"
-    
+
     local sectionFrame = Instance.new("Frame", self.Container)
     sectionFrame.Size = UDim2.new(0, 340, 0, 30)
     sectionFrame.BackgroundTransparency = 1
     sectionFrame.LayoutOrder = self.ItemCount
-    
+
     local lbl = Instance.new("TextLabel", sectionFrame)
     lbl.Size = UDim2.new(1, -10, 1, 0)
     lbl.Position = UDim2.new(0, 5, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = titleText
-    lbl.TextColor3 = Color3.fromRGB(180, 160, 210)
+    lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
     lbl.FontFace = FontUI
     lbl.TextSize = 14
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     RegisterText(lbl)
-    
+
     local line = Instance.new("Frame", sectionFrame)
     line.Size = UDim2.new(1, 0, 0, 1)
     line.Position = UDim2.new(0, 0, 1, -1)
-    line.BackgroundColor3 = Color3.fromRGB(120, 70, 180)
+    line.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
     line.BackgroundTransparency = 0.6
 
     return {
@@ -555,31 +555,31 @@ function TabClass:Button(options)
     local isLight = WindowConfig.Theme == "Light"
 
     local card = Instance.new("TextButton", self.Container)
-    card.Size = UDim2.new(0, 340, 0, 55); card.BackgroundColor3 = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.Text = ""; card.AutoButtonColor = false; card.LayoutOrder = self.ItemCount; card.ZIndex = 12
+    card.Size = UDim2.new(0, 340, 0, 55); card.BackgroundColor3 = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.Text = ""; card.AutoButtonColor = false; card.LayoutOrder = self.ItemCount; card.ZIndex = 12
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
     local stroke = Instance.new("UIStroke", card)
-    stroke.Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
+    stroke.Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
 
     local lockOverlay = CreateLockOverlay(card)
 
     local lblTitle = Instance.new("TextLabel", card)
-    lblTitle.Size = UDim2.new(1, -20, 0, 18); lblTitle.Position = UDim2.new(0, 10, 0, 8); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Button"; lblTitle.TextColor3 = Color3.fromRGB(220, 200, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left; lblTitle.ZIndex = 13
+    lblTitle.Size = UDim2.new(1, -20, 0, 18); lblTitle.Position = UDim2.new(0, 10, 0, 8); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Button"; lblTitle.TextColor3 = Color3.fromRGB(245, 245, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left; lblTitle.ZIndex = 13
     RegisterText(lblTitle)
 
     local lblDesc = Instance.new("TextLabel", card)
-    lblDesc.Size = UDim2.new(1, -20, 0, 16); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.ZIndex = 13
+    lblDesc.Size = UDim2.new(1, -20, 0, 16); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(160, 160, 160); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.ZIndex = 13
     RegisterText(lblDesc)
 
     local ic = Instance.new("ImageLabel", card)
-    ic.Size = UDim2.new(0, 16, 0, 16); ic.AnchorPoint = Vector2.new(1, 0.5); ic.Position = UDim2.new(1, -10, 0.5, 0); ic.BackgroundTransparency = 1; ic.Image = Icons[options.Icon or "mouse-pointer-click"] or ""; ic.ImageColor3 = Color3.fromRGB(200, 180, 230); ic.ZIndex = 13
+    ic.Size = UDim2.new(0, 16, 0, 16); ic.AnchorPoint = Vector2.new(1, 0.5); ic.Position = UDim2.new(1, -10, 0.5, 0); ic.BackgroundTransparency = 1; ic.Image = Icons[options.Icon or "mouse-pointer-click"] or ""; ic.ImageColor3 = Color3.fromRGB(220, 220, 220); ic.ZIndex = 13
 
-    card.MouseEnter:Connect(function() if not lockOverlay.Visible then TweenService:Create(stroke, TweenInfo.new(0.2), {Color = isLight and Color3.fromRGB(120, 80, 160) or Color3.fromRGB(80, 50, 120)}):Play() end end)
-    card.MouseLeave:Connect(function() if not lockOverlay.Visible then TweenService:Create(stroke, TweenInfo.new(0.2), {Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)}):Play() end end)
-    
+    card.MouseEnter:Connect(function() if not lockOverlay.Visible then TweenService:Create(stroke, TweenInfo.new(0.2), {Color = isLight and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(85, 85, 85)}):Play() end end)
+    card.MouseLeave:Connect(function() if not lockOverlay.Visible then TweenService:Create(stroke, TweenInfo.new(0.2), {Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)}):Play() end end)
+
     card.MouseButton1Click:Connect(function()
         if lockOverlay.Visible then return end
-        local hoverColor = isLight and Color3.fromRGB(45, 38, 58) or Color3.fromRGB(35, 30, 45)
-        local baseColor = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24)
+        local hoverColor = isLight and Color3.fromRGB(35, 35, 35) or Color3.fromRGB(28, 28, 28)
+        local baseColor = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15)
         local tw = TweenService:Create(card, TweenInfo.new(0.1), {BackgroundColor3 = hoverColor})
         tw:Play()
         tw.Completed:Connect(function() TweenService:Create(card, TweenInfo.new(0.1), {BackgroundColor3 = baseColor}):Play() end)
@@ -602,49 +602,50 @@ function TabClass:Toggle(options)
     local isCheckbox = options.Type == "Checkbox"
 
     local card = Instance.new("TextButton", self.Container)
-    card.Size = UDim2.new(0, 340, 0, 60); card.BackgroundColor3 = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.Text = ""; card.AutoButtonColor = false; card.LayoutOrder = self.ItemCount; card.ZIndex = 12
+    card.Size = UDim2.new(0, 340, 0, 60); card.BackgroundColor3 = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.Text = ""; card.AutoButtonColor = false; card.LayoutOrder = self.ItemCount; card.ZIndex = 12
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
+    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
 
     local lockOverlay = CreateLockOverlay(card)
     local textOffset = options.Icon and 35 or 10
 
     if options.Icon then
         local ic = Instance.new("ImageLabel", card)
-        ic.Size = UDim2.new(0, 18, 0, 18); ic.Position = UDim2.new(0, 10, 0, 10); ic.BackgroundTransparency = 1; ic.Image = Icons[options.Icon] or ""; ic.ImageColor3 = Color3.fromRGB(200, 180, 230); ic.ZIndex = 13
+        ic.Size = UDim2.new(0, 18, 0, 18); ic.Position = UDim2.new(0, 10, 0, 10); ic.BackgroundTransparency = 1; ic.Image = Icons[options.Icon] or ""; ic.ImageColor3 = Color3.fromRGB(220, 220, 220); ic.ZIndex = 13
     end
 
     local lblTitle = Instance.new("TextLabel", card)
-    lblTitle.Size = UDim2.new(1, -(textOffset + 50), 0, 16); lblTitle.Position = UDim2.new(0, textOffset, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Toggle"; lblTitle.TextColor3 = Color3.fromRGB(220, 200, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left; lblTitle.ZIndex = 13
+    lblTitle.Size = UDim2.new(1, -(textOffset + 50), 0, 16); lblTitle.Position = UDim2.new(0, textOffset, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Toggle"; lblTitle.TextColor3 = Color3.fromRGB(245, 245, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left; lblTitle.ZIndex = 13
     RegisterText(lblTitle)
 
     local lblDesc = Instance.new("TextLabel", card)
-    lblDesc.Size = UDim2.new(1, -20, 0, 28); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextWrapped = true; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.TextYAlignment = Enum.TextYAlignment.Top; lblDesc.ZIndex = 13
+    lblDesc.Size = UDim2.new(1, -20, 0, 28); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(160, 160, 160); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextWrapped = true; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.TextYAlignment = Enum.TextYAlignment.Top; lblDesc.ZIndex = 13
     RegisterText(lblDesc)
 
-    local offColor = isLight and Color3.fromRGB(60, 50, 80) or Color3.fromRGB(40, 30, 55)
+    local offColor = isLight and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(40, 40, 40)
+    local onColor = Color3.fromRGB(255, 255, 255)
     local switchBg = Instance.new("Frame", card)
     switchBg.AnchorPoint = Vector2.new(1, 0.5); switchBg.Position = UDim2.new(1, -10, 0.5, 0); switchBg.ZIndex = 14
 
     local checkMark, circle
 
     if isCheckbox then
-        switchBg.Size = UDim2.new(0, 22, 0, 22); switchBg.BackgroundColor3 = state and Color3.fromRGB(160, 90, 255) or offColor
+        switchBg.Size = UDim2.new(0, 22, 0, 22); switchBg.BackgroundColor3 = state and onColor or offColor
         Instance.new("UICorner", switchBg).CornerRadius = UDim.new(0, 6)
-        checkMark = Instance.new("ImageLabel", switchBg); checkMark.Size = UDim2.new(0, 16, 0, 16); checkMark.AnchorPoint = Vector2.new(0.5, 0.5); checkMark.Position = UDim2.new(0.5, 0, 0.5, 0); checkMark.BackgroundTransparency = 1; checkMark.Image = Icons["check"] or ""; checkMark.ImageColor3 = Color3.fromRGB(255, 255, 255); checkMark.ImageTransparency = state and 0 or 1; checkMark.ZIndex = 15
+        checkMark = Instance.new("ImageLabel", switchBg); checkMark.Size = UDim2.new(0, 16, 0, 16); checkMark.AnchorPoint = Vector2.new(0.5, 0.5); checkMark.Position = UDim2.new(0.5, 0, 0.5, 0); checkMark.BackgroundTransparency = 1; checkMark.Image = Icons["check"] or ""; checkMark.ImageColor3 = Color3.fromRGB(20, 20, 20); checkMark.ImageTransparency = state and 0 or 1; checkMark.ZIndex = 15
     else
-        switchBg.Size = UDim2.new(0, 32, 0, 18); switchBg.BackgroundColor3 = state and Color3.fromRGB(160, 90, 255) or offColor
+        switchBg.Size = UDim2.new(0, 32, 0, 18); switchBg.BackgroundColor3 = state and onColor or offColor
         Instance.new("UICorner", switchBg).CornerRadius = UDim.new(1, 0)
-        circle = Instance.new("Frame", switchBg); circle.Size = UDim2.new(0, 14, 0, 14); circle.AnchorPoint = Vector2.new(0, 0.5); circle.Position = state and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0); circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255); circle.ZIndex = 15
+        circle = Instance.new("Frame", switchBg); circle.Size = UDim2.new(0, 14, 0, 14); circle.AnchorPoint = Vector2.new(0, 0.5); circle.Position = state and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0); circle.BackgroundColor3 = state and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(255, 255, 255); circle.ZIndex = 15
         Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
     end
 
     local function updateVisual()
-        TweenService:Create(switchBg, TweenInfo.new(0.2), {BackgroundColor3 = state and Color3.fromRGB(160, 90, 255) or offColor}):Play()
+        TweenService:Create(switchBg, TweenInfo.new(0.2), {BackgroundColor3 = state and onColor or offColor}):Play()
         if isCheckbox then
             TweenService:Create(checkMark, TweenInfo.new(0.2), {ImageTransparency = state and 0 or 1}):Play()
         else
-            TweenService:Create(circle, TweenInfo.new(0.2), {Position = state and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)}):Play()
+            TweenService:Create(circle, TweenInfo.new(0.2), {Position = state and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0), BackgroundColor3 = state and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(255, 255, 255)}):Play()
         end
     end
 
@@ -670,41 +671,41 @@ function TabClass:Input(options)
     self.ItemCount = self.ItemCount + 1
     local isLight = WindowConfig.Theme == "Light"
     local isTextarea = options.Type == "Textarea"
-    
+
     local card = Instance.new("Frame", self.Container)
-    card.Size = UDim2.new(0, 340, 0, isTextarea and 90 or 65); card.BackgroundColor3 = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.LayoutOrder = self.ItemCount
+    card.Size = UDim2.new(0, 340, 0, isTextarea and 90 or 65); card.BackgroundColor3 = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.LayoutOrder = self.ItemCount
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
-    
+    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
+
     local lockOverlay = CreateLockOverlay(card)
     local iconOffset = options.InputIcon and 35 or 10
-    
+
     if options.InputIcon then
-        local ic = Instance.new("ImageLabel", card); ic.Size = UDim2.new(0, 18, 0, 18); ic.Position = UDim2.new(0, 10, 0, 10); ic.BackgroundTransparency = 1; ic.Image = Icons[options.InputIcon] or ""; ic.ImageColor3 = Color3.fromRGB(200, 180, 230)
+        local ic = Instance.new("ImageLabel", card); ic.Size = UDim2.new(0, 18, 0, 18); ic.Position = UDim2.new(0, 10, 0, 10); ic.BackgroundTransparency = 1; ic.Image = Icons[options.InputIcon] or ""; ic.ImageColor3 = Color3.fromRGB(220, 220, 220)
     end
-    
+
     local lblTitle = Instance.new("TextLabel", card)
-    lblTitle.Size = UDim2.new(1, -120, 0, 16); lblTitle.Position = UDim2.new(0, iconOffset, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Input"; lblTitle.TextColor3 = Color3.fromRGB(220, 200, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left
+    lblTitle.Size = UDim2.new(1, -120, 0, 16); lblTitle.Position = UDim2.new(0, iconOffset, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Input"; lblTitle.TextColor3 = Color3.fromRGB(245, 245, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left
     RegisterText(lblTitle)
-    
+
     local lblDesc = Instance.new("TextLabel", card)
-    lblDesc.Size = UDim2.new(1, -120, 0, 16); lblDesc.Position = UDim2.new(0, iconOffset, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextXAlignment = Enum.TextXAlignment.Left
+    lblDesc.Size = UDim2.new(1, -120, 0, 16); lblDesc.Position = UDim2.new(0, iconOffset, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(160, 160, 160); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextXAlignment = Enum.TextXAlignment.Left
     RegisterText(lblDesc)
-    
+
     local boxBg = Instance.new("Frame", card)
-    boxBg.Size = isTextarea and UDim2.new(1, -20, 0, 40) or UDim2.new(0, 110, 0, 30); boxBg.AnchorPoint = isTextarea and Vector2.new(0, 0) or Vector2.new(1, 0.5); boxBg.Position = isTextarea and UDim2.new(0, 10, 0, 45) or UDim2.new(1, -10, 0.5, 0); boxBg.BackgroundColor3 = isLight and Color3.fromRGB(30, 25, 40) or Color3.fromRGB(14, 12, 18)
+    boxBg.Size = isTextarea and UDim2.new(1, -20, 0, 40) or UDim2.new(0, 110, 0, 30); boxBg.AnchorPoint = isTextarea and Vector2.new(0, 0) or Vector2.new(1, 0.5); boxBg.Position = isTextarea and UDim2.new(0, 10, 0, 45) or UDim2.new(1, -10, 0.5, 0); boxBg.BackgroundColor3 = isLight and Color3.fromRGB(15, 15, 15) or Color3.fromRGB(8, 8, 8)
     Instance.new("UICorner", boxBg).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", boxBg).Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
-    
+    Instance.new("UIStroke", boxBg).Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
+
     local box = Instance.new("TextBox", boxBg)
-    box.Size = UDim2.new(1, -10, 1, 0); box.Position = UDim2.new(0, 5, 0, 0); box.BackgroundTransparency = 1; box.Text = options.Value or "" ; box.PlaceholderText = options.Placeholder or ""; box.TextColor3 = Color3.fromRGB(220, 200, 245); box.PlaceholderColor3 = Color3.fromRGB(130, 110, 160); box.FontFace = FontUI; box.TextSize = 12; box.TextWrapped = isTextarea; box.ClearTextOnFocus = not isTextarea; box.TextXAlignment = isTextarea and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center; box.TextYAlignment = isTextarea and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center
+    box.Size = UDim2.new(1, -10, 1, 0); box.Position = UDim2.new(0, 5, 0, 0); box.BackgroundTransparency = 1; box.Text = options.Value or "" ; box.PlaceholderText = options.Placeholder or ""; box.TextColor3 = Color3.fromRGB(245, 245, 245); box.PlaceholderColor3 = Color3.fromRGB(110, 110, 110); box.FontFace = FontUI; box.TextSize = 12; box.TextWrapped = isTextarea; box.ClearTextOnFocus = not isTextarea; box.TextXAlignment = isTextarea and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center; box.TextYAlignment = isTextarea and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center
     RegisterText(box)
-    
+
     box.FocusLost:Connect(function()
         if lockOverlay.Visible then return end
         if options.Callback then task.spawn(options.Callback, box.Text) end
     end)
-    
+
     return {
         SetTitle = function(t) lblTitle.Text = t end,
         SetDesc = function(d) lblDesc.Text = d end,
@@ -725,32 +726,32 @@ function TabClass:Dropdown(options)
     local isOpen = false
 
     local card = Instance.new("Frame", self.Container)
-    card.Size = UDim2.new(0, 340, 0, 60); card.BackgroundColor3 = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.ClipsDescendants = true; card.LayoutOrder = self.ItemCount; card.ZIndex = 12
+    card.Size = UDim2.new(0, 340, 0, 60); card.BackgroundColor3 = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.ClipsDescendants = true; card.LayoutOrder = self.ItemCount; card.ZIndex = 12
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
+    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
 
     local lockOverlay = CreateLockOverlay(card)
     local textOffset = options.Icon and 35 or 10
 
     if options.Icon then
-        local ic = Instance.new("ImageLabel", card); ic.Size = UDim2.new(0, 18, 0, 18); ic.Position = UDim2.new(0, 10, 0, 10); ic.BackgroundTransparency = 1; ic.Image = Icons[options.Icon] or ""; ic.ImageColor3 = Color3.fromRGB(200, 180, 230); ic.ZIndex = 13
+        local ic = Instance.new("ImageLabel", card); ic.Size = UDim2.new(0, 18, 0, 18); ic.Position = UDim2.new(0, 10, 0, 10); ic.BackgroundTransparency = 1; ic.Image = Icons[options.Icon] or ""; ic.ImageColor3 = Color3.fromRGB(220, 220, 220); ic.ZIndex = 13
     end
 
     local lblTitle = Instance.new("TextLabel", card)
-    lblTitle.Size = UDim2.new(1, -(textOffset + 120), 0, 16); lblTitle.Position = UDim2.new(0, textOffset, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Dropdown"; lblTitle.TextColor3 = Color3.fromRGB(220, 200, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left; lblTitle.ZIndex = 13
+    lblTitle.Size = UDim2.new(1, -(textOffset + 120), 0, 16); lblTitle.Position = UDim2.new(0, textOffset, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Dropdown"; lblTitle.TextColor3 = Color3.fromRGB(245, 245, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left; lblTitle.ZIndex = 13
     RegisterText(lblTitle)
 
     local lblDesc = Instance.new("TextLabel", card)
-    lblDesc.Size = UDim2.new(1, -20, 0, 28); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextWrapped = true; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.TextYAlignment = Enum.TextYAlignment.Top; lblDesc.ZIndex = 13
+    lblDesc.Size = UDim2.new(1, -20, 0, 28); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(160, 160, 160); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextWrapped = true; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.TextYAlignment = Enum.TextYAlignment.Top; lblDesc.ZIndex = 13
     RegisterText(lblDesc)
 
     local selectBtn = Instance.new("TextButton", card)
-    selectBtn.Size = UDim2.new(0, 110, 0, 24); selectBtn.AnchorPoint = Vector2.new(1, 0); selectBtn.Position = UDim2.new(1, -10, 0, 6); selectBtn.BackgroundColor3 = isLight and Color3.fromRGB(30, 25, 40) or Color3.fromRGB(35, 30, 45); selectBtn.Text = "  " .. currentValue; selectBtn.TextColor3 = Color3.fromRGB(220, 200, 245); selectBtn.FontFace = FontUI; selectBtn.TextSize = 12; selectBtn.TextXAlignment = Enum.TextXAlignment.Left; selectBtn.ZIndex = 14
+    selectBtn.Size = UDim2.new(0, 110, 0, 24); selectBtn.AnchorPoint = Vector2.new(1, 0); selectBtn.Position = UDim2.new(1, -10, 0, 6); selectBtn.BackgroundColor3 = isLight and Color3.fromRGB(15, 15, 15) or Color3.fromRGB(25, 25, 25); selectBtn.Text = "  " .. currentValue; selectBtn.TextColor3 = Color3.fromRGB(245, 245, 245); selectBtn.FontFace = FontUI; selectBtn.TextSize = 12; selectBtn.TextXAlignment = Enum.TextXAlignment.Left; selectBtn.ZIndex = 14
     Instance.new("UICorner", selectBtn).CornerRadius = UDim.new(0, 6)
     RegisterText(selectBtn)
 
     local arrow = Instance.new("ImageLabel", selectBtn)
-    arrow.Size = UDim2.new(0, 14, 0, 14); arrow.AnchorPoint = Vector2.new(1, 0.5); arrow.Position = UDim2.new(1, -5, 0.5, 0); arrow.BackgroundTransparency = 1; arrow.Image = Icons["chevron-down"]; arrow.ImageColor3 = Color3.fromRGB(200, 180, 230); arrow.ZIndex = 15
+    arrow.Size = UDim2.new(0, 14, 0, 14); arrow.AnchorPoint = Vector2.new(1, 0.5); arrow.Position = UDim2.new(1, -5, 0.5, 0); arrow.BackgroundTransparency = 1; arrow.Image = Icons["chevron-down"]; arrow.ImageColor3 = Color3.fromRGB(220, 220, 220); arrow.ZIndex = 15
 
     local listFrame = Instance.new("ScrollingFrame", card)
     listFrame.Size = UDim2.new(1, -20, 0, 0); listFrame.Position = UDim2.new(0, 10, 0, 60); listFrame.BackgroundTransparency = 1; listFrame.ScrollBarThickness = 2; listFrame.ZIndex = 14
@@ -759,10 +760,10 @@ function TabClass:Dropdown(options)
 
     for i, optName in ipairs(optionList) do
         local optBtn = Instance.new("TextButton", listFrame)
-        optBtn.Size = UDim2.new(1, -8, 0, 25); optBtn.BackgroundColor3 = isLight and Color3.fromRGB(30, 25, 40) or Color3.fromRGB(28, 24, 35); optBtn.Text = "  " .. optName; optBtn.TextColor3 = Color3.fromRGB(220, 200, 245); optBtn.FontFace = FontUI; optBtn.TextSize = 13; optBtn.TextXAlignment = Enum.TextXAlignment.Left; optBtn.ZIndex = 15
+        optBtn.Size = UDim2.new(1, -8, 0, 25); optBtn.BackgroundColor3 = isLight and Color3.fromRGB(15, 15, 15) or Color3.fromRGB(22, 22, 22); optBtn.Text = "  " .. optName; optBtn.TextColor3 = Color3.fromRGB(245, 245, 245); optBtn.FontFace = FontUI; optBtn.TextSize = 13; optBtn.TextXAlignment = Enum.TextXAlignment.Left; optBtn.ZIndex = 15
         Instance.new("UICorner", optBtn).CornerRadius = UDim.new(0, 4)
         RegisterText(optBtn)
-        
+
         optBtn.MouseButton1Click:Connect(function()
             if lockOverlay.Visible then return end
             currentValue = optName
@@ -797,42 +798,42 @@ function TabClass:Paragraph(options)
     local isLight = WindowConfig.Theme == "Light"
     local btns = options.Buttons or {}
     local hasButtons = #btns > 0
-    
+
     local card = Instance.new("Frame", self.Container)
-    card.Size = UDim2.new(0, 340, 0, hasButtons and 95 or 65); card.BackgroundColor3 = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.LayoutOrder = self.ItemCount
+    card.Size = UDim2.new(0, 340, 0, hasButtons and 95 or 65); card.BackgroundColor3 = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.LayoutOrder = self.ItemCount
     if options.Locked then card.BackgroundTransparency = 0.6 end
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    
+
     local stroke = Instance.new("UIStroke", card)
     if typeof(options.Color) == "string" then
-        stroke.Color = options.Color == "Red" and Color3.fromRGB(200, 50, 80) or (isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70))
+        stroke.Color = options.Color == "Red" and Color3.fromRGB(200, 50, 80) or (isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45))
     elseif typeof(options.Color) == "Color3" then
         stroke.Color = options.Color
     else
-        stroke.Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
+        stroke.Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
     end
 
     local lblTitle = Instance.new("TextLabel", card)
-    lblTitle.Size = UDim2.new(1, -20, 0, 16); lblTitle.Position = UDim2.new(0, 10, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Paragraph"; lblTitle.TextColor3 = Color3.fromRGB(220, 200, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left
+    lblTitle.Size = UDim2.new(1, -20, 0, 16); lblTitle.Position = UDim2.new(0, 10, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Paragraph"; lblTitle.TextColor3 = Color3.fromRGB(245, 245, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left
     if options.Locked then lblTitle.TextTransparency = 0.5 end
     RegisterText(lblTitle)
-    
+
     local lblDesc = Instance.new("TextLabel", card)
-    lblDesc.Size = UDim2.new(1, -20, 0, 28); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextWrapped = true; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.TextYAlignment = Enum.TextYAlignment.Top
+    lblDesc.Size = UDim2.new(1, -20, 0, 28); lblDesc.Position = UDim2.new(0, 10, 0, 28); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(160, 160, 160); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextWrapped = true; lblDesc.TextXAlignment = Enum.TextXAlignment.Left; lblDesc.TextYAlignment = Enum.TextYAlignment.Top
     if options.Locked then lblDesc.TextTransparency = 0.5 end
     RegisterText(lblDesc)
-    
+
     if hasButtons then
         local btnContainer = Instance.new("Frame", card)
         btnContainer.Size = UDim2.new(1, -20, 0, 28); btnContainer.Position = UDim2.new(0, 10, 0, 60); btnContainer.BackgroundTransparency = 1
         local layout = Instance.new("UIListLayout", btnContainer); layout.FillDirection = Enum.FillDirection.Horizontal; layout.SortOrder = Enum.SortOrder.LayoutOrder; layout.Padding = UDim.new(0, 6)
-        
+
         for i, btnData in ipairs(btns) do
             local pBtn = Instance.new("TextButton", btnContainer)
-            pBtn.Size = UDim2.new(1 / #btns, -6 + (6/#btns), 1, 0); pBtn.BackgroundColor3 = isLight and Color3.fromRGB(30, 25, 40) or Color3.fromRGB(35, 30, 45); pBtn.Text = btnData.Title or "Button"; pBtn.TextColor3 = Color3.fromRGB(220, 200, 245); pBtn.FontFace = FontUI; pBtn.TextSize = 12
+            pBtn.Size = UDim2.new(1 / #btns, -6 + (6/#btns), 1, 0); pBtn.BackgroundColor3 = isLight and Color3.fromRGB(15, 15, 15) or Color3.fromRGB(25, 25, 25); pBtn.Text = btnData.Title or "Button"; pBtn.TextColor3 = Color3.fromRGB(245, 245, 245); pBtn.FontFace = FontUI; pBtn.TextSize = 12
             Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 6)
             RegisterText(pBtn)
-            
+
             if options.Locked then
                 pBtn.BackgroundTransparency = 0.5; pBtn.TextTransparency = 0.5; pBtn.AutoButtonColor = false
             else
@@ -853,7 +854,7 @@ end
 function TabClass:Slider(options)
     self.ItemCount = self.ItemCount + 1
     local isLight = WindowConfig.Theme == "Light"
-    
+
     local step = options.Step or 1
     local minVal = options.Value.Min or 0
     local maxVal = options.Value.Max or 100
@@ -861,35 +862,35 @@ function TabClass:Slider(options)
     local currentVal = defaultVal
 
     local card = Instance.new("Frame", self.Container)
-    card.Size = UDim2.new(0, 340, 0, 65); card.BackgroundColor3 = isLight and Color3.fromRGB(35, 30, 45) or Color3.fromRGB(20, 18, 24); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.LayoutOrder = self.ItemCount
+    card.Size = UDim2.new(0, 340, 0, 65); card.BackgroundColor3 = isLight and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(15, 15, 15); card.BackgroundTransparency = WindowConfig.Transparent and 0.2 or 0; card.LayoutOrder = self.ItemCount
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(80, 50, 120) or Color3.fromRGB(50, 35, 70)
+    Instance.new("UIStroke", card).Color = isLight and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(45, 45, 45)
 
     local lockOverlay = CreateLockOverlay(card)
 
     local lblTitle = Instance.new("TextLabel", card)
-    lblTitle.Size = UDim2.new(1, -100, 0, 16); lblTitle.Position = UDim2.new(0, 12, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Slider"; lblTitle.TextColor3 = Color3.fromRGB(220, 200, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left
+    lblTitle.Size = UDim2.new(1, -100, 0, 16); lblTitle.Position = UDim2.new(0, 12, 0, 10); lblTitle.BackgroundTransparency = 1; lblTitle.Text = options.Title or "Slider"; lblTitle.TextColor3 = Color3.fromRGB(245, 245, 245); lblTitle.FontFace = FontUI; lblTitle.TextSize = 14; lblTitle.TextXAlignment = Enum.TextXAlignment.Left
     RegisterText(lblTitle)
 
     local lblDesc = Instance.new("TextLabel", card)
-    lblDesc.Size = UDim2.new(1, -100, 0, 16); lblDesc.Position = UDim2.new(0, 12, 0, 26); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(170, 150, 190); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextXAlignment = Enum.TextXAlignment.Left
+    lblDesc.Size = UDim2.new(1, -100, 0, 16); lblDesc.Position = UDim2.new(0, 12, 0, 26); lblDesc.BackgroundTransparency = 1; lblDesc.Text = options.Desc or ""; lblDesc.TextColor3 = Color3.fromRGB(160, 160, 160); lblDesc.FontFace = FontUI; lblDesc.TextSize = 11; lblDesc.TextXAlignment = Enum.TextXAlignment.Left
     RegisterText(lblDesc)
 
     local valBox = Instance.new("TextBox", card)
-    valBox.Size = UDim2.new(0, 45, 0, 22); valBox.Position = UDim2.new(1, -57, 0, 12); valBox.BackgroundColor3 = Color3.fromRGB(14, 12, 18); valBox.TextColor3 = Color3.fromRGB(220, 200, 245); valBox.Text = tostring(defaultVal); valBox.FontFace = FontUI; valBox.TextSize = 12; valBox.BorderSizePixel = 0; valBox.ClearTextOnFocus = false
+    valBox.Size = UDim2.new(0, 45, 0, 22); valBox.Position = UDim2.new(1, -57, 0, 12); valBox.BackgroundColor3 = Color3.fromRGB(8, 8, 8); valBox.TextColor3 = Color3.fromRGB(245, 245, 245); valBox.Text = tostring(defaultVal); valBox.FontFace = FontUI; valBox.TextSize = 12; valBox.BorderSizePixel = 0; valBox.ClearTextOnFocus = false
     Instance.new("UICorner", valBox).CornerRadius = UDim.new(0, 4)
     RegisterText(valBox)
 
     local slideTrack = Instance.new("TextButton", card)
-    slideTrack.Size = UDim2.new(1, -24, 0, 6); slideTrack.Position = UDim2.new(0, 12, 0, 48); slideTrack.BackgroundColor3 = Color3.fromRGB(40, 30, 55); slideTrack.Text = ""; slideTrack.AutoButtonColor = false; slideTrack.BorderSizePixel = 0
+    slideTrack.Size = UDim2.new(1, -24, 0, 6); slideTrack.Position = UDim2.new(0, 12, 0, 48); slideTrack.BackgroundColor3 = Color3.fromRGB(40, 40, 40); slideTrack.Text = ""; slideTrack.AutoButtonColor = false; slideTrack.BorderSizePixel = 0
     Instance.new("UICorner", slideTrack).CornerRadius = UDim.new(1, 0)
 
     local slideFill = Instance.new("Frame", slideTrack)
-    slideFill.Size = UDim2.new(0, 0, 1, 0); slideFill.BackgroundColor3 = Color3.fromRGB(160, 90, 255); slideFill.BorderSizePixel = 0
+    slideFill.Size = UDim2.new(0, 0, 1, 0); slideFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255); slideFill.BorderSizePixel = 0
     Instance.new("UICorner", slideFill).CornerRadius = UDim.new(1, 0)
 
     local slideCircle = Instance.new("Frame", slideFill)
-    slideCircle.Size = UDim2.new(0, 12, 0, 12); slideCircle.AnchorPoint = Vector2.new(0.5, 0.5); slideCircle.Position = UDim2.new(1, 0, 0.5, 0); slideCircle.BackgroundColor3 = Color3.fromRGB(200, 180, 230); slideCircle.BorderSizePixel = 0
+    slideCircle.Size = UDim2.new(0, 12, 0, 12); slideCircle.AnchorPoint = Vector2.new(0.5, 0.5); slideCircle.Position = UDim2.new(1, 0, 0.5, 0); slideCircle.BackgroundColor3 = Color3.fromRGB(180, 180, 180); slideCircle.BorderSizePixel = 0
     Instance.new("UICorner", slideCircle).CornerRadius = UDim.new(1, 0)
 
     local sliding = false
@@ -898,16 +899,16 @@ function TabClass:Slider(options)
         local clamped = math.clamp(rawVal, minVal, maxVal)
         local rounded = math.round((clamped - minVal) / step) * step + minVal
         currentVal = math.clamp(rounded, minVal, maxVal)
-        
+
         valBox.Text = tostring(currentVal)
-        
+
         local percent = (currentVal - minVal) / (maxVal - minVal)
         if animate then
             TweenService:Create(slideFill, TweenInfo.new(0.1), {Size = UDim2.new(percent, 0, 1, 0)}):Play()
         else
             slideFill.Size = UDim2.new(percent, 0, 1, 0)
         end
-        
+
         if options.Callback then task.spawn(options.Callback, currentVal) end
     end
 
@@ -967,12 +968,12 @@ function LuannyUi:Destroy()
         ScreenGui:Destroy()
         ScreenGui = nil
     end
-    
+
     if NotifyScreen then
         NotifyScreen:Destroy()
         NotifyScreen = nil
     end
-    
+
     Initialized = false
     CurrentWindow = nil
     IsBarVisible = true
